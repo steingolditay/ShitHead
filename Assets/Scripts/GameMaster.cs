@@ -81,7 +81,7 @@ public class GameMaster : MonoBehaviour
     
     public void ShuffleCards()
     {
-        cardModels = Constants.GetAllCardModels();
+        cardModels = Utils.GetAllCardModels();
 
         for (int i = 0; i < cardModels.Count - 1; i++)
         {
@@ -95,8 +95,6 @@ public class GameMaster : MonoBehaviour
 
     public void SlotPlayer()
     {
-        Vector3 centerPosition = playerHand.position;
-        centerPosition.y = cardHeight.position.y;
         
         Debug.Log("Slot a card to player");
         CardModel cardModel = GetTopDeckCardModel();
@@ -106,123 +104,33 @@ public class GameMaster : MonoBehaviour
         card.SetCardClass(cardModel.cardClass);
         cardTransform.SetParent(playerHand, true);
         
-        Vector3 cardPosition = SortPlayerHand(cardTransform.gameObject);
-
-        // move 
-        LeanTween.moveLocalY(cardTransform.gameObject, 1f, 0.3f)
+        Vector3 cardPosition = Utils.SortPlayerHand(playerHand, cardTransform.gameObject);
+        
+        LeanTween.moveLocalY(cardTransform.gameObject, cardPosition.y, 0.3f)
             .setEase(LeanTweenType.easeInOutQuad)
             .setOnComplete(() => {
             cardTransform.LeanMoveLocal(cardPosition, 0.5f)
                 .setEase(LeanTweenType.easeInOutQuad);
             });
         // rotate
-        LeanTween.rotateZ(cardTransform.gameObject, 0, 0.8f)
-            .setOnComplete(() => {
-                // sort
-            });
+        LeanTween.rotateZ(cardTransform.gameObject, 0, 0.4f);
     }
 
-    private Vector3 SortPlayerHand(GameObject newCard)
-    {
-        float baseHorizontalDistance = 0.02f;
-        float baseVerticalDistance = 0.005f;
-        Vector3 newCardPosition = new Vector3();
-        Collection<GameObject> playerCards = new Collection<GameObject>();
-        for (int i = 0; i < playerHand.childCount; i++)
-        {
-            playerCards.Add(playerHand.GetChild(i).gameObject);
-        }
-
-        // if (newCard != null)
-        // {
-        //     playerCards.Add(newCard);
-        // }
-
-        List<GameObject> orderedList = playerCards.OrderBy(card => card.GetComponent<Card>().GetCardClass()).ToList();
-        int numberOfCards = orderedList.Count;
-        if (numberOfCards > 24)
-        {
-            baseHorizontalDistance /= 1.3f;
-        }
-        bool evenNumberOfCards = numberOfCards % 2 == 0;
-        if (evenNumberOfCards)
-        {
-            int count = 0;
-            float startPosition = 0.01f;
-            int leftMiddlePosition = numberOfCards / 2;
-            int rightMiddlePosition = (numberOfCards / 2) + 1;
-            for (int i = leftMiddlePosition - 1; i >=0 ; i--)
-            {
-                GameObject cardObject = orderedList[i];
-                Vector3 destPosition = new Vector3();
-                destPosition.x = -startPosition + (count * -baseHorizontalDistance);
-                destPosition.y = count * -baseVerticalDistance;
-                cardObject.LeanMoveLocal(destPosition, 0.3f);
-                if (cardObject == newCard)
-                {
-                    newCardPosition = destPosition;
-                }
-                count++;
-            }
-
-            count = 0;
-            for (int i = rightMiddlePosition - 1; i < numberOfCards; i++)
-            {
-                GameObject cardObject = orderedList[i];
-                Vector3 destPosition = new Vector3();
-                destPosition.x = startPosition + (count * baseHorizontalDistance);
-                destPosition.y = count * baseVerticalDistance;
-                cardObject.LeanMoveLocal(destPosition, 0.3f);
-                if (cardObject == newCard)
-                {
-                    newCardPosition = destPosition;
-                }
-                count++;
-            }
-        }
-        else
-        {
-            int count = 0;
-            int middlePosition = (numberOfCards / 2) + 1;
-            for (int i = middlePosition - 1; i >= 0 ; i--)
-            {
-                GameObject cardObject = orderedList[i];
-                Vector3 destPosition = new Vector3();
-                destPosition.x =  count * -baseHorizontalDistance;
-                destPosition.y = count * -baseVerticalDistance;
-                cardObject.LeanMoveLocal(destPosition, 0.3f);
-                if (cardObject == newCard)
-                {
-                    newCardPosition = destPosition;
-                }
-                count++;
-            }
-            count = 1;
-            for (int i = middlePosition; i < numberOfCards; i++)
-            {
-                GameObject cardObject = orderedList[i];
-                Vector3 destPosition = new Vector3();
-                destPosition.x = (count * baseHorizontalDistance);
-                destPosition.y = count * baseVerticalDistance;
-                cardObject.LeanMoveLocal(destPosition, 0.3f);
-                if (cardObject == newCard)
-                {
-                    newCardPosition = destPosition;
-                }
-                count++;
-            }
-            
-
-        }
-
-        return newCardPosition;
-    }
-    
     public void SlotOpponent()
     {
-        Debug.Log("Slot a card to opponent");
+        Transform cardTransform = GetTopDeckCard();
+        cardTransform.SetParent(opponentHand, true);
+        Vector3 cardPosition = Utils.SortOpponentHand(opponentHand, cardTransform.gameObject);
 
+        // move 
+        LeanTween.moveLocalY(cardTransform.gameObject, cardPosition.y, 0.3f)
+            .setEase(LeanTweenType.easeInOutQuad)
+            .setOnComplete(() => {
+                cardTransform.LeanMoveLocal(cardPosition, 0.5f)
+                    .setEase(LeanTweenType.easeInOutQuad);
+            });
     }
+    
 
     public Collection<CardModel> GetDeck()
     {
@@ -240,7 +148,6 @@ public class GameMaster : MonoBehaviour
                     return sprite;
                 }
             }
-
         }
         else
         {
