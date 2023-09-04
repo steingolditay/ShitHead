@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -54,96 +53,46 @@ public static class Utils
 
 
     private static Vector3 SortHand(IList<GameObject> slotCards, GameObject newCard)
-    {
+    { 
         Vector3 newCardPosition = new Vector3();
         int numberOfCards = slotCards.Count;
         float horizontalDistance = numberOfCards > 24 ? baseHorizontalDistance / 1.3f : baseHorizontalDistance;
-
         bool evenNumberOfCards = numberOfCards % 2 == 0;
-        if (evenNumberOfCards)
+        int middleCardIndex = numberOfCards / 2;
+        
+        GameObject middleCard = slotCards[middleCardIndex];
+        Vector3 middleCardPosition = Vector3.zero;
+        middleCardPosition.x = evenNumberOfCards ? horizontalDistance / 2 : 0;
+        if (middleCard != newCard)
         {
-            int count = 0;
-            float startPosition = 0.01f;
-            int leftMiddlePosition = numberOfCards / 2;
-            int rightMiddlePosition = (numberOfCards / 2) + 1;
-            for (int i = leftMiddlePosition - 1; i >= 0 ; i--)
-            {
-                GameObject cardObject = slotCards[i];
-                Vector3 destPosition = new Vector3();
-                destPosition.x = -startPosition + (count * -horizontalDistance);
-                destPosition.y = count * -baseVerticalDistance;
-                if (cardObject == newCard)
-                {
-                    newCardPosition = destPosition;
-                }
-                else
-                {
-                    cardObject.LeanMoveLocal(destPosition, 0.3f);
-                }
-                count++;
-            }
-
-            count = 0;
-            for (int i = rightMiddlePosition - 1; i < numberOfCards; i++)
-            {
-                GameObject cardObject = slotCards[i];
-                Vector3 destPosition = new Vector3();
-                destPosition.x = startPosition + (count * horizontalDistance);
-                destPosition.y = (count + 1) * baseVerticalDistance;
-                if (cardObject == newCard)
-                {
-                    newCardPosition = destPosition;
-                }
-                else
-                {
-                    cardObject.LeanMoveLocal(destPosition, 0.3f);
-                }
-
-                count++;
-            }
+            middleCard.LeanMoveLocal(middleCardPosition, 0.3f);
         }
         else
         {
-            int count = 0;
-            int middlePosition = (numberOfCards / 2) + 1;
-            for (int i = middlePosition - 1; i >= 0 ; i--)
+            newCardPosition = middleCardPosition;
+        }
+        
+        for (int i = 0; i < numberOfCards; i++)
+        {
+            if (i != middleCardIndex)
             {
                 GameObject cardObject = slotCards[i];
-                Vector3 destPosition = new Vector3();
-                destPosition.x = count * -horizontalDistance;
-                destPosition.y = count * -baseVerticalDistance;
+
+                int relativePosition = Mathf.Abs(i - middleCardIndex);
+                Vector3 destination = Vector3.zero;
+                destination.x = middleCardPosition.x + relativePosition * (i < middleCardIndex ? -horizontalDistance : horizontalDistance);
+                destination.y = middleCardPosition.y + relativePosition * (i < middleCardIndex ? -baseVerticalDistance : baseVerticalDistance);
                 if (cardObject == newCard)
                 {
-                    newCardPosition = destPosition;
+                    newCardPosition = destination;
                 }
                 else
                 {
-                    cardObject.LeanMoveLocal(destPosition, 0.3f);
+                    cardObject.LeanMoveLocal(destination, 0.3f);
                 }
-                count++;
-            }
-            count = 1;
-            for (int i = middlePosition; i < numberOfCards; i++)
-            {
-                GameObject cardObject = slotCards[i];
-                Vector3 destPosition = new Vector3();
-                destPosition.x = (count * horizontalDistance);
-                destPosition.y = count * baseVerticalDistance;
-                if (cardObject == newCard)
-                {
-                    newCardPosition = destPosition;
-                }
-                else
-                {
-                    cardObject.LeanMoveLocal(destPosition, 0.3f);
-                }
-                count++;
             }
         }
-
+        
         return newCardPosition;
     }
-    
-
-    
 }
