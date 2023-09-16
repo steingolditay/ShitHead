@@ -99,6 +99,7 @@
      <Compile Include="Assets\LeanTween\Framework\LeanSmooth.cs" />
      <Compile Include="Assets\LeanTween\Examples\Scripts\GeneralBasics2d.cs" />
      <Compile Include="Assets\Packages\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_FrameRateCounter.cs" />
+     <Compile Include="Assets\Lava_Flowing_Shader\Scripts\ScrollingUVs_Layers.cs" />
      <Compile Include="Assets\LeanTween\Examples\Scripts\PathSplineTrack.cs" />
      <Compile Include="Assets\Packages\TextMesh Pro\Examples &amp; Extras\Scripts\VertexJitter.cs" />
      <Compile Include="Assets\Packages\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_TextEventHandler.cs" />
@@ -118,19 +119,23 @@
      <Compile Include="Assets\Packages\TextMesh Pro\Examples &amp; Extras\Scripts\Benchmark01.cs" />
      <Compile Include="Assets\LeanTween\Examples\Archived\TestingRigidbodyCS.cs" />
      <Compile Include="Assets\LeanTween\Examples\Scripts\Following.cs" />
+     <Compile Include="Assets\SelectTableCardsDialog.cs" />
      <None Include="Assets\Packages\TextMesh Pro\Shaders\TMPro.cginc" />
      <None Include="Assets\Packages\TextMesh Pro\Shaders\TMP_SDF-Mobile Overlay.shader" />
      <None Include="Assets\LeanTween\ReadMe.txt" />
      <None Include="Assets\Packages\TextMesh Pro\Shaders\TMP_Bitmap.shader" />
      <None Include="Assets\Packages\Playing Cards\Readme_Eng.txt" />
      <None Include="Assets\Packages\TextMesh Pro\Examples &amp; Extras\Fonts\Oswald-Bold - OFL.txt" />
+     <None Include="Assets\Lava_Flowing_Shader\Shaders\Diffuse_Lava_Distort.shader" />
      <None Include="Assets\Packages\TextMesh Pro\Examples &amp; Extras\Fonts\Anton OFL.txt" />
      <None Include="Assets\Packages\TextMesh Pro\Shaders\TMPro_Mobile.cginc" />
      <None Include="Assets\LeanTween\License.txt" />
      <None Include="Assets\Packages\TextMesh Pro\Shaders\TMP_SDF SSD.shader" />
      <None Include="Assets\Packages\Playing Cards\Readme_Jpn.txt" />
      <None Include="Assets\Packages\TextMesh Pro\Shaders\TMP_SDF-Surface-Mobile.shader" />
+     <None Include="Assets\Lava_Flowing_Shader\ReadMe.txt" />
      <None Include="Assets\Packages\TextMesh Pro\Shaders\TMP_SDF-Surface.shader" />
+     <None Include="Assets\Lava_Flowing_Shader\Shaders\Unlit_Lava_Distort_Transparent.shader" />
      <None Include="Assets\Packages\TextMesh Pro\Sprites\EmojiOne Attribution.txt" />
      <None Include="Assets\Packages\TextMesh Pro\Shaders\TMP_Bitmap-Custom-Atlas.shader" />
      <None Include="Assets\Packages\TextMesh Pro\Shaders\TMP_SDF.shader" />
@@ -138,6 +143,7 @@
      <None Include="Assets\Packages\TextMesh Pro\Resources\LineBreaking Leading Characters.txt" />
      <None Include="Assets\Packages\TextMesh Pro\Shaders\TMPro_Properties.cginc" />
      <None Include="Assets\Packages\TextMesh Pro\Shaders\TMPro_Surface.cginc" />
+     <None Include="Assets\Lava_Flowing_Shader\Shaders\Unlit_Lava_Distort.shader" />
      <None Include="Assets\Packages\TextMesh Pro\Resources\LineBreaking Following Characters.txt" />
      <None Include="Assets\LeanTween\Examples\Archived\2dUnlitWithFade.shader" />
      <None Include="Assets\Packages\TextMesh Pro\Shaders\TMP_SDF-Mobile Masking.shader" />
@@ -145,6 +151,7 @@
      <None Include="Assets\Packages\TextMesh Pro\Shaders\TMP_SDF Overlay.shader" />
      <None Include="Assets\Packages\TextMesh Pro\Shaders\TMP_Bitmap-Mobile.shader" />
      <None Include="Assets\Packages\TextMesh Pro\Fonts\LiberationSans - OFL.txt" />
+     <None Include="Assets\Lava_Flowing_Shader\Shaders\Unlit_Lava_Simple.shader" />
      <None Include="Assets\Packages\TextMesh Pro\Shaders\TMP_SDF-Mobile.shader" />
      <None Include="Assets\Packages\TextMesh Pro\Sprites\EmojiOne.json" />
      <None Include="Assets\Packages\TextMesh Pro\Shaders\TMP_Sprite.shader" />
@@ -794,6 +801,9 @@
      <Reference Include="VSSettingsProvider">
      <HintPath>D:/Unity/ShitHead/Library/ScriptAssemblies/VSSettingsProvider.dll</HintPath>
      </Reference>
+     <Reference Include="Unity.2D.Sprite.Editor">
+     <HintPath>D:/Unity/ShitHead/Library/ScriptAssemblies/Unity.2D.Sprite.Editor.dll</HintPath>
+     </Reference>
      <Reference Include="Unity.Netcode.Editor">
      <HintPath>D:/Unity/ShitHead/Library/ScriptAssemblies/Unity.Netcode.Editor.dll</HintPath>
      </Reference>
@@ -812,14 +822,14 @@
      <Reference Include="Unity.RenderPipelines.Core.ShaderLibrary">
      <HintPath>D:/Unity/ShitHead/Library/ScriptAssemblies/Unity.RenderPipelines.Core.ShaderLibrary.dll</HintPath>
      </Reference>
-     <Reference Include="Unity.VisualScripting.Flow">
-     <HintPath>D:/Unity/ShitHead/Library/ScriptAssemblies/Unity.VisualScripting.Flow.dll</HintPath>
-     </Reference>
      <Reference Include="Unity.Netcode.Runtime">
      <HintPath>D:/Unity/ShitHead/Library/ScriptAssemblies/Unity.Netcode.Runtime.dll</HintPath>
      </Reference>
      <Reference Include="UnityEngine.UI">
      <HintPath>D:/Unity/ShitHead/Library/ScriptAssemblies/UnityEngine.UI.dll</HintPath>
+     </Reference>
+     <Reference Include="Unity.VisualScripting.Flow">
+     <HintPath>D:/Unity/ShitHead/Library/ScriptAssemblies/Unity.VisualScripting.Flow.dll</HintPath>
      </Reference>
      <Reference Include="Unity.VisualScripting.Core">
      <HintPath>D:/Unity/ShitHead/Library/ScriptAssemblies/Unity.VisualScripting.Core.dll</HintPath>
@@ -830,11 +840,11 @@
      <Reference Include="Unity.Mathematics">
      <HintPath>D:/Unity/ShitHead/Library/ScriptAssemblies/Unity.Mathematics.dll</HintPath>
      </Reference>
-     <Reference Include="Unity.ShaderGraph.Editor">
-     <HintPath>D:/Unity/ShitHead/Library/ScriptAssemblies/Unity.ShaderGraph.Editor.dll</HintPath>
-     </Reference>
      <Reference Include="Unity.Netcode.Components">
      <HintPath>D:/Unity/ShitHead/Library/ScriptAssemblies/Unity.Netcode.Components.dll</HintPath>
+     </Reference>
+     <Reference Include="Unity.ShaderGraph.Editor">
+     <HintPath>D:/Unity/ShitHead/Library/ScriptAssemblies/Unity.ShaderGraph.Editor.dll</HintPath>
      </Reference>
      <Reference Include="Unity.Burst">
      <HintPath>D:/Unity/ShitHead/Library/ScriptAssemblies/Unity.Burst.dll</HintPath>

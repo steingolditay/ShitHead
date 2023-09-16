@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -94,5 +95,75 @@ public static class Utils
         }
         
         return newCardPosition;
+    }
+
+    public static bool CanPlayCard(int cardToPlay, int onCard)
+    {
+        if (onCard == 0)
+        {
+            return true;
+        }
+        switch (cardToPlay)
+        {
+             case 1:
+                 return onCard != 7;
+             case 2:
+                 return true;
+             case 3:
+                 return true;
+             case 4:
+                 return onCard <= 4 || onCard == 7;
+             case 5: 
+                 return onCard <= 5 || onCard == 7;
+             case 6: 
+                 return onCard <= 5 || onCard == 7;
+             case 7:
+                 return onCard <= 7;
+             case 8:
+                 return onCard <= 8 && onCard != 7;
+             case 9:
+                 return onCard <= 9 && onCard != 7;
+             case 10:
+                 return onCard != 7;
+             case 11:
+                 return onCard <= 11 && onCard != 7;
+             case 12:
+                 return onCard <= 12 && onCard != 7;
+             case 13:
+                 return onCard <= 13 && onCard != 7;
+             case 14:
+                 return true;
+             default: 
+                 return false;
+             
+        }
+    }
+
+    public static Sprite GetSpriteForCardModel(CardModel cardModel)
+    {
+        Sprite[] cardFronts = GameMaster.Singleton.GetCardFronts();
+        if (cardModel.cardFlavour == CardFlavour.Joker01 || cardModel.cardFlavour == CardFlavour.Joker02)
+        {
+            foreach (Sprite sprite in cardFronts)
+            {
+                if (sprite.name == cardModel.cardFlavour.ToString())
+                {
+                    return sprite;
+                }
+            }
+        }
+        else
+        {
+            string cardClass = cardModel.cardClass < 10 ? "0" + cardModel.cardClass : cardModel.cardClass.ToString();
+            foreach (Sprite sprite in cardFronts)
+            {
+                if (sprite.name == cardModel.cardFlavour + cardClass)
+                {
+                    return sprite;
+                }
+            }
+        }
+
+        return null;
     }
 }

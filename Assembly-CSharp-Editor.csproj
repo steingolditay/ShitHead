@@ -721,6 +721,9 @@
      <Reference Include="VSSettingsProvider">
      <HintPath>D:/Unity/ShitHead/Library/ScriptAssemblies/VSSettingsProvider.dll</HintPath>
      </Reference>
+     <Reference Include="Unity.2D.Sprite.Editor">
+     <HintPath>D:/Unity/ShitHead/Library/ScriptAssemblies/Unity.2D.Sprite.Editor.dll</HintPath>
+     </Reference>
      <Reference Include="Unity.Netcode.Editor">
      <HintPath>D:/Unity/ShitHead/Library/ScriptAssemblies/Unity.Netcode.Editor.dll</HintPath>
      </Reference>
@@ -739,14 +742,14 @@
      <Reference Include="Unity.RenderPipelines.Core.ShaderLibrary">
      <HintPath>D:/Unity/ShitHead/Library/ScriptAssemblies/Unity.RenderPipelines.Core.ShaderLibrary.dll</HintPath>
      </Reference>
-     <Reference Include="Unity.VisualScripting.Flow">
-     <HintPath>D:/Unity/ShitHead/Library/ScriptAssemblies/Unity.VisualScripting.Flow.dll</HintPath>
-     </Reference>
      <Reference Include="Unity.Netcode.Runtime">
      <HintPath>D:/Unity/ShitHead/Library/ScriptAssemblies/Unity.Netcode.Runtime.dll</HintPath>
      </Reference>
      <Reference Include="UnityEngine.UI">
      <HintPath>D:/Unity/ShitHead/Library/ScriptAssemblies/UnityEngine.UI.dll</HintPath>
+     </Reference>
+     <Reference Include="Unity.VisualScripting.Flow">
+     <HintPath>D:/Unity/ShitHead/Library/ScriptAssemblies/Unity.VisualScripting.Flow.dll</HintPath>
      </Reference>
      <Reference Include="Unity.VisualScripting.Core">
      <HintPath>D:/Unity/ShitHead/Library/ScriptAssemblies/Unity.VisualScripting.Core.dll</HintPath>
@@ -757,11 +760,11 @@
      <Reference Include="Unity.Mathematics">
      <HintPath>D:/Unity/ShitHead/Library/ScriptAssemblies/Unity.Mathematics.dll</HintPath>
      </Reference>
-     <Reference Include="Unity.ShaderGraph.Editor">
-     <HintPath>D:/Unity/ShitHead/Library/ScriptAssemblies/Unity.ShaderGraph.Editor.dll</HintPath>
-     </Reference>
      <Reference Include="Unity.Netcode.Components">
      <HintPath>D:/Unity/ShitHead/Library/ScriptAssemblies/Unity.Netcode.Components.dll</HintPath>
+     </Reference>
+     <Reference Include="Unity.ShaderGraph.Editor">
+     <HintPath>D:/Unity/ShitHead/Library/ScriptAssemblies/Unity.ShaderGraph.Editor.dll</HintPath>
      </Reference>
      <Reference Include="Unity.Burst">
      <HintPath>D:/Unity/ShitHead/Library/ScriptAssemblies/Unity.Burst.dll</HintPath>
