@@ -7,7 +7,6 @@ using UnityEngine;
 public class PlayerController : NetworkBehaviour
 {
 
-    private bool isSelectedTableCardsLayed = false;
     private GameMaster gameMaster;
     
     private void Start()
@@ -21,18 +20,14 @@ public class PlayerController : NetworkBehaviour
 
     private void Update()
     {
-        if (isSelectedTableCardsLayed)
-        {
-            return;
-        }
         if (GameMaster.Singleton.playerSelectedTableCards)
         {
-            isSelectedTableCardsLayed = true;
+            GameMaster.Singleton.playerSelectedTableCards = false;
+            ulong id = NetworkManager.Singleton.LocalClientId;
             for (int i = 0; i < 3; i++)
             {
-                ulong id = NetworkManager.Singleton.LocalClientId;
-                CardModel cardModel = gameMaster.selectedTableCards[i].GetComponent<CardModel>();
-                SetSelectedTableCards_ServerRpc(id, cardModel.cardClass, cardModel.cardFlavour.ToString(), i);
+                Card card = gameMaster.selectedTableCards[i].GetComponent<Card>();
+                SetSelectedTableCards_ServerRpc(id, card.GetCardClass(), card.GetCardFlavour().ToString(), i);
             }
         }
     }
@@ -69,7 +64,8 @@ public class PlayerController : NetworkBehaviour
     {
         if (id != NetworkManager.Singleton.LocalClientId)
         {
-            
+            CardModel cardModel = new CardModel(cardClass, Utils.GetCardFlavourForString(cardFlavor));
+            gameMaster.SetOpponentSelectedTableCards(cardModel, number);
         }
     }
     

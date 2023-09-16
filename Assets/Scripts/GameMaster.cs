@@ -296,14 +296,15 @@ public class GameMaster : MonoBehaviour
             .setOvershoot(0.2f);
     }
 
-    public IEnumerator SetSelectedTableCards()
+    public IEnumerator SetPlayerSelectedTableCards()
     {
+        playerSelectedTableCards = true;
         ToggleSelectCardsDialog(false);
         for (int i = 0; i < 3; i++)
         {
             Card card = selectedTableCards[i];
             Transform cardTransform = card.transform;
-            Transform parent = GetTableCardPositionForIndex(i);
+            Transform parent = GetPlayerTableCardPositionForIndex(i);
             
             cardTransform.SetParent(parent);
             card.SetIsOnSelectionStage(false);
@@ -328,10 +329,25 @@ public class GameMaster : MonoBehaviour
         }
 
         yield return null;
+    }
+    
+    public void SetOpponentSelectedTableCards(CardModel cardModel, int number)
+    {
+        Transform cardTransform = GetOpponentCard();
+        Card card = cardTransform.GetComponent<Card>();
+        card.SetCardModel(cardModel);
 
+        Transform destination = GetOpponentTableCardPositionForIndex(number);
+        cardTransform.SetParent(destination);
+        
+        Utils.SortOpponentHand(opponentHand, null);
+        
+        cardTransform.LeanMoveLocal(new Vector3(0, deckCardDistance, 0), 0.3f)
+            .setEase(LeanTweenType.easeInOutQuad);
+        LeanTween.rotateZ(cardTransform.gameObject, 0, 0.3f);
     }
 
-    private Transform GetTableCardPositionForIndex(int index)
+    private Transform GetPlayerTableCardPositionForIndex(int index)
     {
         Transform position;
         switch (index)
@@ -346,11 +362,38 @@ public class GameMaster : MonoBehaviour
                 position = playerTableCard3;
                 break;
             default:
+                position = playerTableCard1;
+                break;
+        }
+
+        return position;
+    }
+    
+    private Transform GetOpponentTableCardPositionForIndex(int index)
+    {
+        Transform position;
+        switch (index)
+        {
+            case 0:
+                position = opponentTableCard1;
+                break;
+            case 1:
+                position = opponentTableCard2;
+                break;
+            case 2:
+                position = opponentTableCard3;
+                break;
+            default:
                 position = opponentTableCard1;
                 break;
         }
 
         return position;
+    }
+
+    private Transform GetOpponentCard()
+    {
+        return opponentHand.GetChild(opponentHand.childCount - 1);
     }
 
     public CardModel GetTopDeckCardModel()

@@ -34,6 +34,11 @@ public class Card : MonoBehaviour
     {
         return cardModel.cardClass;
     }
+    
+    public CardFlavour GetCardFlavour()
+    {
+        return cardModel.cardFlavour;
+    }
 
     public void SetCardModel(CardModel model)
     {

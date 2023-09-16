@@ -14,7 +14,7 @@ public class SelectTableCardsDialog : MonoBehaviour
 
         readyButton.onClick.AddListener(() =>
         {
-            StartCoroutine(GameMaster.Singleton.SetSelectedTableCards());
+            StartCoroutine(GameMaster.Singleton.SetPlayerSelectedTableCards());
         });
     }
 //

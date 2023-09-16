@@ -166,4 +166,17 @@ public static class Utils
 
         return null;
     }
+
+    public static CardFlavour GetCardFlavourForString(String flavour)
+    {
+        foreach (CardFlavour value in Enum.GetValues(typeof(CardFlavour)))
+        {
+            if (value.ToString() == flavour)
+            {
+                return value;
+            }
+        }
+
+        return CardFlavour.Club;
+    }
 }
