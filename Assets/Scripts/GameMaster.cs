@@ -61,6 +61,8 @@ public class GameMaster : MonoBehaviour
     public List<Card> selectedTableCards = new List<Card>();
     public List<Card> unselectedTableCards = new List<Card>();
 
+    public int playersReady = 0;
+    public ulong firstPlayerToStart = 0;
     private PlayerTurn currentPlayerTurn;
 
 
@@ -72,6 +74,7 @@ public class GameMaster : MonoBehaviour
         }
 
         selectCardsDialog.transform.localScale = Vector3.zero;
+        selectCardsDialog.SetActive(true);
     }
 
     private void OnDestroy()
@@ -87,7 +90,6 @@ public class GameMaster : MonoBehaviour
         selectedTableCards.Add(card);
         unselectedTableCards.Remove(card);
         selectCardsDialog.GetComponent<SelectTableCardsDialog>().SetActive(selectedTableCards.Count == 3);
-        Debug.Log(selectedTableCards.Count);
     }
     
     public void RemoveCardFromSelectedTableCards(Card card)
@@ -95,9 +97,8 @@ public class GameMaster : MonoBehaviour
         selectedTableCards.Remove(card);
         unselectedTableCards.Add(card);
         selectCardsDialog.GetComponent<SelectTableCardsDialog>().SetActive(selectedTableCards.Count == 3);
-        Debug.Log(selectedTableCards.Count);
-//
     }
+    
 
     public void SetCurrentPlayerTurn(PlayerTurn player)
     {
@@ -122,7 +123,6 @@ public class GameMaster : MonoBehaviour
     
     public IEnumerator PutCardInDeck()
     {
-        Debug.Log("put cards in deck");
         Quaternion rotation = Quaternion.Euler(new Vector3(0, 0, 180));
         Vector3 destination = deck.position;
     
@@ -152,7 +152,6 @@ public class GameMaster : MonoBehaviour
             cardModels[i] = cardModels[random];
             cardModels[random] = temp;
         }
-        Debug.Log("");
     }
 
     public void DealPlayerTableCard(CardModel cardModel, int number)
@@ -251,7 +250,6 @@ public class GameMaster : MonoBehaviour
     public void SlotPlayer()
     {
         
-        Debug.Log("Slot a card to player");
         CardModel cardModel = GetTopDeckCardModel();
         Transform cardTransform = GetTopDeckCard();
         Card card = cardTransform.GetComponent<Card>();
@@ -394,6 +392,18 @@ public class GameMaster : MonoBehaviour
     private Transform GetOpponentCard()
     {
         return opponentHand.GetChild(opponentHand.childCount - 1);
+    }
+
+    public void SetFirstCardFromDeck(CardModel cardModel)
+    {
+        Transform topDeckCard = GetTopDeckCard();
+        topDeckCard.GetComponent<Card>().SetCardModel(cardModel);
+        topDeckCard.SetParent(pile);
+        float positionY = deckCardDistance * pile.childCount;
+        topDeckCard.LeanMoveLocal(new Vector3(0, positionY, 0), 0.3f)
+            .setEase(LeanTweenType.easeInOutQuad);
+        LeanTween.rotateZ(topDeckCard.gameObject, 0, 0.3f);
+        
     }
 
     public CardModel GetTopDeckCardModel()

@@ -8,7 +8,7 @@ public class PlayerController : NetworkBehaviour
 {
 
     private GameMaster gameMaster;
-    
+
     private void Start()
     {
         gameMaster = GameMaster.Singleton;
@@ -20,6 +20,8 @@ public class PlayerController : NetworkBehaviour
 
     private void Update()
     {
+        if (!IsOwner) return;
+
         if (GameMaster.Singleton.playerSelectedTableCards)
         {
             GameMaster.Singleton.playerSelectedTableCards = false;
@@ -27,17 +29,20 @@ public class PlayerController : NetworkBehaviour
             for (int i = 0; i < 3; i++)
             {
                 Card card = gameMaster.selectedTableCards[i].GetComponent<Card>();
-                SetSelectedTableCards_ServerRpc(id, card.GetCardClass(), card.GetCardFlavour().ToString(), i);
+                SetOpponentSelectedTableCards_ServerRpc(id, card.GetCardClass(), card.GetCardFlavour().ToString(), i);
             }
+
+            AddPlayerReady_ServerRpc(id);
         }
     }
-
+    
     [ServerRpc(RequireOwnership = false)]
     void DealDeck_ServerRpc()
     {
         gameMaster.ShuffleCards();
         DealDeck_ClientRpc();
     }
+    
     [ClientRpc]
     void DealDeck_ClientRpc()
     {
@@ -52,15 +57,16 @@ public class PlayerController : NetworkBehaviour
         };
     }
 
+
+
     [ServerRpc(RequireOwnership = false)]
-    void SetSelectedTableCards_ServerRpc(ulong id, int cardClass, string cardFlavor, int number)
+    void SetOpponentSelectedTableCards_ServerRpc(ulong id, int cardClass, string cardFlavor, int number)
     {
-        DealSelectedTableCard_ClientRpc(id, cardClass, cardFlavor, number);
+        DealOpponentSelectedTableCard_ClientRpc(id, cardClass, cardFlavor, number);
     }
-
-
+    
     [ClientRpc]
-    void DealSelectedTableCard_ClientRpc(ulong id, int cardClass, string cardFlavor, int number)
+    void DealOpponentSelectedTableCard_ClientRpc(ulong id, int cardClass, string cardFlavor, int number)
     {
         if (id != NetworkManager.Singleton.LocalClientId)
         {
@@ -72,7 +78,6 @@ public class PlayerController : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     void DealHands_ServerRpc()
     {
-        Debug.Log("Finished Dealing Deck");
         StartCoroutine(DealHandsToClients());
     }
 
@@ -85,13 +90,11 @@ public class PlayerController : NetworkBehaviour
             if (Enum.TryParse(cardFlavor, out flavour))
             {
                 gameMaster.DealPlayerTableCard(new CardModel(cardClass, flavour), number);
-                Debug.Log( "I GOT " + cardClass + cardFlavor);
             }
         }
         else
         {
             gameMaster.DealOpponentTableCard(number);
-            Debug.Log( "Opponent GOT " + cardClass + cardFlavor);
         }
     }
     
@@ -109,15 +112,63 @@ public class PlayerController : NetworkBehaviour
             if (Enum.TryParse(cardFlavor, out flavour))
             {
                 gameMaster.DealPlayerSelectionCard(new CardModel(cardClass, flavour), number);
-                Debug.Log( "I GOT " + cardClass + cardFlavor);
             }
         }
         else
         {
             gameMaster.DealOpponentSelectionCard();
-            Debug.Log( "Opponent GOT " + cardClass + cardFlavor);
         }
     }
+    
+    [ServerRpc(RequireOwnership = false)]
+    void AddPlayerReady_ServerRpc(ulong id)
+    {
+        AddPlayerReady_ClientRpc(id);
+    }
+    [ClientRpc]
+    void AddPlayerReady_ClientRpc(ulong id)
+    {
+        gameMaster.playersReady++;
+        if (!IsHost) return;
+
+        if (gameMaster.playersReady == 1)
+        {
+            gameMaster.firstPlayerToStart = id;
+        }
+        if (gameMaster.playersReady == 2)
+        {
+            SetFirstCardFromDeck_ServerRpc();
+        }
+    }
+    
+    [ServerRpc(RequireOwnership = false)]
+    void SetPlayerTurn_ServerRpc(ulong playerId)
+    {
+        SetPlayerTurn_ClientRpc(playerId);
+    }
+
+    [ClientRpc]
+    void SetPlayerTurn_ClientRpc(ulong playerId)
+    {
+        bool isMyTurn = NetworkManager.Singleton.LocalClientId == playerId;
+        gameMaster.SetCurrentPlayerTurn(isMyTurn ? GameMaster.PlayerTurn.Player : GameMaster.PlayerTurn.Opponent);
+    }
+    
+    [ServerRpc(RequireOwnership = false)]
+    void SetFirstCardFromDeck_ServerRpc()
+    {
+        CardModel cardModel = gameMaster.GetTopDeckCardModel();
+        SetFirstCardFromDeck_ClientRpc(cardModel.cardClass, cardModel.cardFlavour.ToString());
+    }
+    
+    [ClientRpc] 
+    void SetFirstCardFromDeck_ClientRpc(int cardClass, string cardFlavor)
+    {
+        gameMaster.SetFirstCardFromDeck(new CardModel(cardClass, Utils.GetCardFlavourForString(cardFlavor)));
+        SetPlayerTurn_ServerRpc(gameMaster.firstPlayerToStart);
+
+    }
+
     
 
     private IEnumerator DealHandsToClients()

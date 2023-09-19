@@ -134,7 +134,6 @@ GameObject:
   - component: {fileID: 43178530}
   - component: {fileID: 43178533}
   - component: {fileID: 43178532}
-  - component: {fileID: 43178531}
   m_Layer: 0
   m_Name: OpponentSphere
   m_TagString: Untagged
@@ -150,25 +149,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 43178529}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -7.05, y: 0.4790001, z: 5.13}
-  m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
+  m_LocalPosition: {x: 0, y: 0.45, z: 1.5}
+  m_LocalScale: {x: 3, y: 0.5, z: 0.1}
   m_Children: []
   m_Father: {fileID: 1466279910}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!135 &43178531
-SphereCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 43178529}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 0.5
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!23 &43178532
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -704,7 +690,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &305671483
 RectTransform:
   m_ObjectHideFlags: 0
@@ -5788,7 +5774,6 @@ GameObject:
   - component: {fileID: 2140616997}
   - component: {fileID: 2140617000}
   - component: {fileID: 2140616999}
-  - component: {fileID: 2140616998}
   m_Layer: 0
   m_Name: PlayerSphere
   m_TagString: Untagged
@@ -5804,25 +5789,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2140616996}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 7.05, y: 0.4790001, z: -5.13}
-  m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
+  m_LocalPosition: {x: 0, y: 0.45, z: -1.5}
+  m_LocalScale: {x: 3, y: 0.5, z: 0.1}
   m_Children: []
   m_Father: {fileID: 1912451739}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!135 &2140616998
-SphereCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2140616996}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 0.5
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!23 &2140616999
 MeshRenderer:
   m_ObjectHideFlags: 0
