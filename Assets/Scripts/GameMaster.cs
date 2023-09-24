@@ -2,20 +2,21 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
 public class GameMaster : MonoBehaviour
 {
     public static GameMaster Singleton { get; private set; }
+    private PlayerController playerController;
 
     [SerializeField] private GameObject cardPrefab;
     [SerializeField] private Sprite cover;
     [SerializeField] private Sprite[] cardFronts;
 
-    [Header("Placements")] 
-    [SerializeField] private Transform cardHeight;
+    [Header("Placements")] [SerializeField]
+    private Transform cardHeight;
+
     [SerializeField] private Transform deckSpawnPoint;
     [SerializeField] private Transform playerHand;
     [SerializeField] private Transform opponentHand;
@@ -28,31 +29,33 @@ public class GameMaster : MonoBehaviour
     [SerializeField] private Transform pile;
     [SerializeField] private Transform deck;
     [SerializeField] private Transform graveyard;
-    
+
     [SerializeField] private Transform playerSelectionCard1;
     [SerializeField] private Transform playerSelectionCard2;
     [SerializeField] private Transform playerSelectionCard3;
     [SerializeField] private Transform playerSelectionCard4;
     [SerializeField] private Transform playerSelectionCard5;
     [SerializeField] private Transform playerSelectionCard6;
-    
-    [Header("Turn Indicators")] 
-    [SerializeField] private Renderer playerTurnIndicator;
+
+    [Header("Turn Indicators")] [SerializeField]
+    private Renderer playerTurnIndicator;
+
     [SerializeField] private Renderer opponentTurnIndicator;
     [SerializeField] private Material playerTurnIndicatorMaterial;
     [SerializeField] private Material opponentTurnIndicatorMaterial;
     [SerializeField] private Material turnIndicatorOffMaterial;
-    
-    [Header("Dialogs")] 
-    [SerializeField] private GameObject selectCardsDialog;
-    
+
+    [Header("Dialogs")] [SerializeField] private GameObject selectCardsDialog;
+
 
 
     public enum PlayerTurn
     {
-        Player, Opponent
+        Player,
+        Opponent,
+        None
     }
-    
+
     private Collection<CardModel> cardModels = new Collection<CardModel>();
     private const float initialTimeBetweenPutCardInDeck = 0.2f;
     private const float deckCardDistance = 0.005f;
@@ -63,7 +66,7 @@ public class GameMaster : MonoBehaviour
 
     public int playersReady = 0;
     public ulong firstPlayerToStart = 0;
-    private PlayerTurn currentPlayerTurn;
+    private PlayerTurn currentPlayerTurn = PlayerTurn.None;
 
 
     private void OnEnable()
@@ -85,27 +88,32 @@ public class GameMaster : MonoBehaviour
         }
     }
 
+    public void SetPlayerController(PlayerController callback)
+    {
+        playerController = callback;
+    }
+
     public void AddCardToSelectedTableCards(Card card)
     {
         selectedTableCards.Add(card);
         unselectedTableCards.Remove(card);
         selectCardsDialog.GetComponent<SelectTableCardsDialog>().SetActive(selectedTableCards.Count == 3);
     }
-    
+
     public void RemoveCardFromSelectedTableCards(Card card)
     {
         selectedTableCards.Remove(card);
         unselectedTableCards.Add(card);
         selectCardsDialog.GetComponent<SelectTableCardsDialog>().SetActive(selectedTableCards.Count == 3);
     }
-    
+
 
     public void SetCurrentPlayerTurn(PlayerTurn player)
     {
         currentPlayerTurn = player;
         playerTurnIndicator.material =
             player == PlayerTurn.Player ? playerTurnIndicatorMaterial : turnIndicatorOffMaterial;
-        
+
         opponentTurnIndicator.material =
             player == PlayerTurn.Player ? turnIndicatorOffMaterial : opponentTurnIndicatorMaterial;
 
@@ -120,27 +128,27 @@ public class GameMaster : MonoBehaviour
     {
         return playerHand;
     }
-    
+
     public IEnumerator PutCardInDeck()
     {
         Quaternion rotation = Quaternion.Euler(new Vector3(0, 0, 180));
         Vector3 destination = deck.position;
-    
+
         for (int i = 0; i < 54; i++)
         {
-            
+
             float speed = 1 / (i == 0 ? 1f : i);
             yield return new WaitForSeconds(speed * initialTimeBetweenPutCardInDeck);
             destination.y = deck.position.y + (i * deckCardDistance);
             GameObject card = Instantiate(cardPrefab, deckSpawnPoint.position, rotation);
             card.transform.SetParent(deck, true);
             card.GetComponent<Card>().SetCover(cover);
-            LeanTween.move(card, destination, putCardInDeckAnimationSpeed);  
+            LeanTween.move(card, destination, putCardInDeckAnimationSpeed);
         }
-        
+
         yield return new WaitForSeconds(1.5f);
     }
-    
+
     public void ShuffleCards()
     {
         cardModels = Utils.GetAllCardModels();
@@ -172,14 +180,14 @@ public class GameMaster : MonoBehaviour
                 placement = playerTableCard1;
                 break;
         }
-        
+
         Transform cardTransform = GetTopDeckCard();
         Card card = cardTransform.GetComponent<Card>();
         card.SetCardModel(cardModel);
         cardTransform.SetParent(placement, true);
         cardTransform.LeanMoveLocal(new Vector3(0, 0, 0), 0.3f);
     }
-    
+
     public void DealPlayerSelectionCard(CardModel cardModel, int number)
     {
         Transform placement;
@@ -207,7 +215,7 @@ public class GameMaster : MonoBehaviour
                 placement = playerSelectionCard1;
                 break;
         }
-        
+
         Transform cardTransform = GetTopDeckCard();
         Card card = cardTransform.GetComponent<Card>();
         card.SetCardModel(cardModel);
@@ -236,33 +244,35 @@ public class GameMaster : MonoBehaviour
                 placement = opponentTableCard1;
                 break;
         }
+
         Transform cardTransform = GetTopDeckCard();
         cardTransform.SetParent(placement, true);
         cardTransform.LeanMoveLocal(new Vector3(0, 0, 0), 0.3f);
-        
+
     }
-    
+
     public void DealOpponentSelectionCard()
     {
         SlotOpponent();
     }
-    
+
     public void SlotPlayer()
     {
-        
+
         CardModel cardModel = GetTopDeckCardModel();
         Transform cardTransform = GetTopDeckCard();
         Card card = cardTransform.GetComponent<Card>();
         card.SetCardModel(cardModel);
         cardTransform.SetParent(playerHand, true);
-        
+
         Vector3 cardPosition = Utils.SortPlayerHand(playerHand, cardTransform.gameObject);
-        
+
         LeanTween.moveLocalY(cardTransform.gameObject, cardPosition.y, 0.3f)
             .setEase(LeanTweenType.easeInOutQuad)
-            .setOnComplete(() => {
-            cardTransform.LeanMoveLocal(cardPosition, 0.5f)
-                .setEase(LeanTweenType.easeInOutQuad);
+            .setOnComplete(() =>
+            {
+                cardTransform.LeanMoveLocal(cardPosition, 0.5f)
+                    .setEase(LeanTweenType.easeInOutQuad);
             });
         LeanTween.rotateZ(cardTransform.gameObject, 0, 0.4f);
     }
@@ -276,7 +286,8 @@ public class GameMaster : MonoBehaviour
         // move 
         LeanTween.moveLocalY(cardTransform.gameObject, cardPosition.y, 0.3f)
             .setEase(LeanTweenType.easeInOutQuad)
-            .setOnComplete(() => {
+            .setOnComplete(() =>
+            {
                 cardTransform.LeanMoveLocal(cardPosition, 0.5f)
                     .setEase(LeanTweenType.easeInOutQuad);
             });
@@ -303,22 +314,25 @@ public class GameMaster : MonoBehaviour
             Card card = selectedTableCards[i];
             Transform cardTransform = card.transform;
             Transform parent = GetPlayerTableCardPositionForIndex(i);
-            
-            cardTransform.SetParent(parent);
+
+            cardTransform.SetParent(parent, true);
             card.SetIsOnSelectionStage(false);
             card.ToggleHighlight(false);
-            cardTransform.LeanMoveLocal(new Vector3(0, deckCardDistance, 0), 0.3f);
-            yield return new WaitForSeconds(0.3f);
+            Vector3 position = new Vector3(0, deckCardDistance, 0);
+            cardTransform.LeanMoveLocal(position, 0.5f);
+            yield return new WaitForSeconds(0.5f);
         }
-        yield return new WaitForSeconds(0.3f);
+
+        yield return new WaitForSeconds(0.5f);
 
 
         for (int i = 0; i < 3; i++)
         {
             Card card = unselectedTableCards[i];
+            card.SetIsOnSelectionStage(false);
             Transform cardTransform = card.transform;
             cardTransform.SetParent(playerHand, true);
-            
+
             Vector3 cardPosition = Utils.SortPlayerHand(playerHand, cardTransform.gameObject);
             cardTransform.LeanMoveLocal(cardPosition, 0.3f)
                 .setEase(LeanTweenType.easeInOutQuad);
@@ -328,7 +342,7 @@ public class GameMaster : MonoBehaviour
 
         yield return null;
     }
-    
+
     public void SetOpponentSelectedTableCards(CardModel cardModel, int number)
     {
         Transform cardTransform = GetOpponentCard();
@@ -336,10 +350,10 @@ public class GameMaster : MonoBehaviour
         card.SetCardModel(cardModel);
 
         Transform destination = GetOpponentTableCardPositionForIndex(number);
-        cardTransform.SetParent(destination);
-        
+        cardTransform.SetParent(destination, true);
+
         Utils.SortOpponentHand(opponentHand, null);
-        
+
         cardTransform.LeanMoveLocal(new Vector3(0, deckCardDistance, 0), 0.3f)
             .setEase(LeanTweenType.easeInOutQuad);
         LeanTween.rotateZ(cardTransform.gameObject, 0, 0.3f);
@@ -366,7 +380,7 @@ public class GameMaster : MonoBehaviour
 
         return position;
     }
-    
+
     private Transform GetOpponentTableCardPositionForIndex(int index)
     {
         Transform position;
@@ -398,12 +412,11 @@ public class GameMaster : MonoBehaviour
     {
         Transform topDeckCard = GetTopDeckCard();
         topDeckCard.GetComponent<Card>().SetCardModel(cardModel);
-        topDeckCard.SetParent(pile);
-        float positionY = deckCardDistance * pile.childCount;
-        topDeckCard.LeanMoveLocal(new Vector3(0, positionY, 0), 0.3f)
+        topDeckCard.SetParent(pile, true);
+        topDeckCard.LeanMoveLocal(Vector3.zero, 0.3f)
             .setEase(LeanTweenType.easeInOutQuad);
         LeanTween.rotateZ(topDeckCard.gameObject, 0, 0.3f);
-        
+
     }
 
     public CardModel GetTopDeckCardModel()
@@ -416,6 +429,22 @@ public class GameMaster : MonoBehaviour
     public Transform GetTopDeckCard()
     {
         return deck.GetChild(deck.childCount - 1);
+    }
+
+    public void PutCardFromPlayerHandInPile(Card card)
+    {
+        // put card
+        card.ToggleHighlight(false);
+        Vector3 destination = new Vector3(0, deckCardDistance * pile.childCount, 0);
+        card.transform.SetParent(pile, true);
+        
+        card.transform.LeanMoveLocal(destination, 0.3f).setOnComplete(() =>
+        {
+            SlotPlayer();
+            // end turn
+
+        });
+        playerController.OnPutCardInPile(card);
     }
 
     public int GetTopPileCardClass()

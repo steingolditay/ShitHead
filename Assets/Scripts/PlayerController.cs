@@ -12,6 +12,7 @@ public class PlayerController : NetworkBehaviour
     private void Start()
     {
         gameMaster = GameMaster.Singleton;
+        gameMaster.SetPlayerController(this);
         if (!IsHost)
         {
             DealDeck_ServerRpc();
@@ -56,8 +57,7 @@ public class PlayerController : NetworkBehaviour
             }
         };
     }
-
-
+    
 
     [ServerRpc(RequireOwnership = false)]
     void SetOpponentSelectedTableCards_ServerRpc(ulong id, int cardClass, string cardFlavor, int number)
@@ -167,6 +167,13 @@ public class PlayerController : NetworkBehaviour
         gameMaster.SetFirstCardFromDeck(new CardModel(cardClass, Utils.GetCardFlavourForString(cardFlavor)));
         SetPlayerTurn_ServerRpc(gameMaster.firstPlayerToStart);
 
+    }
+
+
+
+    public void OnPutCardInPile(Card card)
+    {
+        Debug.Log("I put " + card.GetCardClass() + " / " + card.GetCardFlavour());
     }
 
     

@@ -3,7 +3,8 @@ using UnityEngine.UI;
 
 public class Card : MonoBehaviour
 {
-    
+
+    private GameMaster gameMaster;
     private Image frontImage, coverImage;
     private GameObject highlight;
     private Vector3 originalScale = Vector3.zero;
@@ -27,6 +28,7 @@ public class Card : MonoBehaviour
         Color frontImageColor = frontImage.color;
         frontImageColor.a = 0;
         frontImage.color = frontImageColor;
+        gameMaster = GameMaster.Singleton;
 
     }
 
@@ -67,26 +69,34 @@ public class Card : MonoBehaviour
         isOnSelectionStage = state;
     }
 
-    public bool GetIsOnSelectedStage()
-    {
-        return isOnSelectionStage;
-    }
-
     private void OnMouseDown()
     {
         if (isOnSelectionStage)
         {
             if (isHighlighted)
             {
-                GameMaster.Singleton.RemoveCardFromSelectedTableCards(this);
+                gameMaster.RemoveCardFromSelectedTableCards(this);
             }
             else
             {
-                GameMaster.Singleton.AddCardToSelectedTableCards(this);
+                gameMaster.AddCardToSelectedTableCards(this);
 
             }
             isHighlighted = !isHighlighted;
             ToggleHighlight(isHighlighted);
+            return;
+        }
+        
+        if (IsMyTurn())
+        {
+            if (transform.parent == gameMaster.GetPlayerHand())
+            {
+                if (Utils.CanPlayCard(cardModel.cardClass, gameMaster.GetTopPileCardClass()))
+                {
+                    gameMaster.PutCardFromPlayerHandInPile(this);
+                }
+            }
+
         }
     }
 
@@ -98,11 +108,11 @@ public class Card : MonoBehaviour
 
     private void OnMouseEnter()
     {
-        if (transform.parent == GameMaster.Singleton.GetPlayerHand() && !isHoverdOn)
+        if (transform.parent == gameMaster.GetPlayerHand() && !isHoverdOn)
         {
             isHoverdOn = true;
             transform.LeanScale(new Vector3(originalScale.x * 1.1f, originalScale.y , originalScale.z * 1.1f), 0.1f);
-            if (Utils.CanPlayCard(cardModel.cardClass, GameMaster.Singleton.GetTopPileCardClass()))
+            if (Utils.CanPlayCard(cardModel.cardClass, gameMaster.GetTopPileCardClass()))
             {
                 ToggleHighlight(true);
             }
@@ -111,11 +121,16 @@ public class Card : MonoBehaviour
     
     private void OnMouseExit()
     {
-        if (transform.parent == GameMaster.Singleton.GetPlayerHand() && isHoverdOn)
+        if (transform.parent == gameMaster.GetPlayerHand() && isHoverdOn)
         {
             isHoverdOn = false;
             transform.LeanScale(new Vector3(originalScale.x, originalScale.y, originalScale.z), 0.1f);
             ToggleHighlight(false);
         }    
+    }
+
+    private bool IsMyTurn()
+    {
+        return gameMaster.GetCurrentPlayerTurn() == GameMaster.PlayerTurn.Player;
     }
 }
