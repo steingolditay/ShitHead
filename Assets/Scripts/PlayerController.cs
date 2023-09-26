@@ -26,11 +26,11 @@ public class PlayerController : NetworkBehaviour
         if (GameMaster.Singleton.playerSelectedTableCards)
         {
             GameMaster.Singleton.playerSelectedTableCards = false;
-            ulong id = NetworkManager.Singleton.LocalClientId;
+            ulong id = GetId();
             for (int i = 0; i < 3; i++)
             {
                 Card card = gameMaster.selectedTableCards[i].GetComponent<Card>();
-                SetOpponentSelectedTableCards_ServerRpc(id, card.GetCardClass(), card.GetCardFlavour().ToString(), i);
+                SetOpponentSelectedTableCards_ServerRpc(GetId(), card.GetCardClass(), card.GetCardFlavour().ToString(), i);
             }
 
             AddPlayerReady_ServerRpc(id);
@@ -68,7 +68,7 @@ public class PlayerController : NetworkBehaviour
     [ClientRpc]
     void DealOpponentSelectedTableCard_ClientRpc(ulong id, int cardClass, string cardFlavor, int number)
     {
-        if (id != NetworkManager.Singleton.LocalClientId)
+        if (id != GetId())
         {
             CardModel cardModel = new CardModel(cardClass, Utils.GetCardFlavourForString(cardFlavor));
             gameMaster.SetOpponentSelectedTableCards(cardModel, number);
@@ -84,7 +84,7 @@ public class PlayerController : NetworkBehaviour
     [ClientRpc]
     void DealTableCard_ClientRpc(ulong id, int cardClass, string cardFlavor, int number)
     {
-        if (id == NetworkManager.Singleton.LocalClientId)
+        if (id == GetId())
         {
             CardFlavour flavour;
             if (Enum.TryParse(cardFlavor, out flavour))
@@ -106,7 +106,7 @@ public class PlayerController : NetworkBehaviour
             gameMaster.ToggleSelectCardsDialog(true);
         }
         
-        if (id == NetworkManager.Singleton.LocalClientId)
+        if (id == GetId())
         {
             CardFlavour flavour;
             if (Enum.TryParse(cardFlavor, out flavour))
@@ -116,7 +116,7 @@ public class PlayerController : NetworkBehaviour
         }
         else
         {
-            gameMaster.DealOpponentSelectionCard();
+            gameMaster.OpponentDrawCardFromDeck();
         }
     }
     
@@ -150,7 +150,7 @@ public class PlayerController : NetworkBehaviour
     [ClientRpc]
     void SetPlayerTurn_ClientRpc(ulong playerId)
     {
-        bool isMyTurn = NetworkManager.Singleton.LocalClientId == playerId;
+        bool isMyTurn = GetId() == playerId;
         gameMaster.SetCurrentPlayerTurn(isMyTurn ? GameMaster.PlayerTurn.Player : GameMaster.PlayerTurn.Opponent);
     }
     
@@ -169,15 +169,111 @@ public class PlayerController : NetworkBehaviour
 
     }
 
+    [ServerRpc(RequireOwnership = false)]
+    void SetOpponentHandCardInPile_ServerRpc(ulong id, int cardClass, string cardFlavor)
+    {
+        SetOpponentHandCardInPile_ClientRpc(id, cardClass, cardFlavor);
+    }
+
+    [ClientRpc]
+    void SetOpponentHandCardInPile_ClientRpc(ulong id, int cardClass, string cardFlavour)
+    {
+        if (id != GetId())
+        {
+            Transform cardTransform = gameMaster.GetOpponentHandCard();
+            cardTransform.GetComponent<Card>().SetCardModel(new CardModel(cardClass, cardFlavour));
+            gameMaster.SetOpponentHandCardInPile(cardTransform);
+        }
+    }
+
+    
+    [ServerRpc(RequireOwnership = false)]
+    void TurnFinished_ServerRpc(ulong id)
+    {
+        IReadOnlyList<ulong> clientIds = NetworkManager.Singleton.ConnectedClientsIds;
+        foreach (ulong clientId in clientIds)
+        {
+            if (clientId != id)
+            {
+                SetPlayerTurn_ClientRpc(clientId);
+                return;
+            }
+        }
+    }
+    
+    
+    [ServerRpc(RequireOwnership = false)]
+    void DrawMissingCards_ServerRpc(ulong id)
+    {
+        CardModel cardModel = gameMaster.GetTopDeckCardModel();
+        DrawMissingCards_ClientRpc(id, cardModel.cardClass, cardModel.cardFlavour.ToString());
+    }
+
+    [ClientRpc]
+    void DrawMissingCards_ClientRpc(ulong id, int cardClass, string cardFlavour)
+    {
+        if (id == GetId())
+        {
+            gameMaster.PlayerDrawMissingCardsFromDeck(new CardModel(cardClass, cardFlavour));
+        }
+        else
+        {
+            gameMaster.OpponentDrawCardFromDeck();
+        }
+    }
+    
+    [ServerRpc(RequireOwnership = false)]
+    void DrawCard_ServerRpc(ulong id)
+    {
+        CardModel cardModel = gameMaster.GetTopDeckCardModel();
+        DrawCard_ClientRpc(id, cardModel.cardClass, cardModel.cardFlavour.ToString());
+    }
+
+    [ClientRpc]
+    void DrawCard_ClientRpc(ulong id, int cardClass, string cardFlavour)
+    {
+        if (id == GetId())
+        {
+            gameMaster.PlayerDrawMissingCardsFromDeck(new CardModel(cardClass, cardFlavour));
+        }
+        else
+        {
+            gameMaster.OpponentDrawCardFromDeck();
+        }
+    }
 
 
     public void OnPutCardInPile(Card card)
     {
-        Debug.Log("I put " + card.GetCardClass() + " / " + card.GetCardFlavour());
+        SetOpponentHandCardInPile_ServerRpc(GetId(), card.GetCardClass(), card.GetCardFlavour().ToString());
+    }
+
+    public void OnDrawCard()
+    {
+        ulong id = GetId();
+        DrawCard_ServerRpc(id);
+        TurnFinished_ServerRpc(id);
+
+    }
+
+    private void OnDrawMissingCardsFromDeck(ulong id)
+    {
+        DrawMissingCards_ServerRpc(id);
+    }
+
+    public void OnTurnFinished()
+    {
+        ulong id = GetId();
+        OnDrawMissingCardsFromDeck(id);
+        TurnFinished_ServerRpc(id);
+    }
+
+    private ulong GetId()
+    {
+        return NetworkManager.Singleton.LocalClientId;
     }
 
     
-
     private IEnumerator DealHandsToClients()
     {
         IReadOnlyList<ulong> clientIds = NetworkManager.Singleton.ConnectedClientsIds;

@@ -45,10 +45,9 @@ public class GameMaster : MonoBehaviour
     [SerializeField] private Material opponentTurnIndicatorMaterial;
     [SerializeField] private Material turnIndicatorOffMaterial;
 
-    [Header("Dialogs")] [SerializeField] private GameObject selectCardsDialog;
-
-
-
+    [Header("Dialogs")] 
+    [SerializeField] private GameObject selectCardsDialog;
+    
     public enum PlayerTurn
     {
         Player,
@@ -60,9 +59,12 @@ public class GameMaster : MonoBehaviour
     private const float initialTimeBetweenPutCardInDeck = 0.2f;
     private const float deckCardDistance = 0.005f;
     private const float putCardInDeckAnimationSpeed = 0.5f;
+    
     public bool playerSelectedTableCards = false;
     public List<Card> selectedTableCards = new List<Card>();
     public List<Card> unselectedTableCards = new List<Card>();
+
+    public List<Card> selectedCards = new List<Card>();
 
     public int playersReady = 0;
     public ulong firstPlayerToStart = 0;
@@ -251,15 +253,13 @@ public class GameMaster : MonoBehaviour
 
     }
 
-    public void DealOpponentSelectionCard()
+    public void PlayerDrawCardFromDeck()
     {
-        SlotOpponent();
+        playerController.OnDrawCard();
     }
 
-    public void SlotPlayer()
+    public void PlayerDrawMissingCardsFromDeck(CardModel cardModel)
     {
-
-        CardModel cardModel = GetTopDeckCardModel();
         Transform cardTransform = GetTopDeckCard();
         Card card = cardTransform.GetComponent<Card>();
         card.SetCardModel(cardModel);
@@ -277,13 +277,12 @@ public class GameMaster : MonoBehaviour
         LeanTween.rotateZ(cardTransform.gameObject, 0, 0.4f);
     }
 
-    public void SlotOpponent()
+    public void OpponentDrawCardFromDeck()
     {
         Transform cardTransform = GetTopDeckCard();
         cardTransform.SetParent(opponentHand, true);
         Vector3 cardPosition = Utils.SortOpponentHand(opponentHand, cardTransform.gameObject);
 
-        // move 
         LeanTween.moveLocalY(cardTransform.gameObject, cardPosition.y, 0.3f)
             .setEase(LeanTweenType.easeInOutQuad)
             .setOnComplete(() =>
@@ -319,11 +318,11 @@ public class GameMaster : MonoBehaviour
             card.SetIsOnSelectionStage(false);
             card.ToggleHighlight(false);
             Vector3 position = new Vector3(0, deckCardDistance, 0);
-            cardTransform.LeanMoveLocal(position, 0.5f);
-            yield return new WaitForSeconds(0.5f);
+            cardTransform.LeanMoveLocal(position, 0.3f);
+            yield return new WaitForSeconds(0.3f);
         }
 
-        yield return new WaitForSeconds(0.5f);
+        yield return new WaitForSeconds(0.3f);
 
 
         for (int i = 0; i < 3; i++)
@@ -419,6 +418,28 @@ public class GameMaster : MonoBehaviour
 
     }
 
+    public void OnCardSelected(Card card, bool state)
+    {
+        if (!state)
+        {
+            selectedCards.Remove(card);
+            return;
+        }
+        //
+        if (selectedCards.Count == 0 || selectedCards[0].GetCardClass() == card.GetCardClass())
+        {
+            selectedCards.Add(card);
+            return;
+        }
+
+        foreach (Card selectedCard in selectedCards)
+        {
+            selectedCard.DisableSelection();
+        }
+        selectedCards.Clear();
+        selectedCards.Add(card);
+    }
+
     public CardModel GetTopDeckCardModel()
     {
         CardModel cardModel = cardModels[0];
@@ -433,18 +454,51 @@ public class GameMaster : MonoBehaviour
 
     public void PutCardFromPlayerHandInPile(Card card)
     {
-        // put card
-        card.ToggleHighlight(false);
-        Vector3 destination = new Vector3(0, deckCardDistance * pile.childCount, 0);
-        card.transform.SetParent(pile, true);
-        
-        card.transform.LeanMoveLocal(destination, 0.3f).setOnComplete(() =>
-        {
-            SlotPlayer();
-            // end turn
 
-        });
-        playerController.OnPutCardInPile(card);
+        List<Card> cardsToPlay = new List<Card>();
+        if (selectedCards.Count > 0 && selectedCards[0].GetCardClass() == card.GetCardClass())
+        {
+            cardsToPlay = selectedCards;
+        }
+        else
+        {
+            cardsToPlay.Add(card);
+        }
+
+        foreach (Card cardToPlay in cardsToPlay)
+        {
+            cardToPlay.DisableSelection();
+        }
+
+        StartCoroutine(PlayCards(cardsToPlay));
+    }
+
+    private IEnumerator PlayCards(List<Card> cards)
+    {
+        float waitTime = cards.Count > 1 ? 0.3f : 0f;
+        foreach (Card card in cards)
+        {
+            Vector3 destination = new Vector3(0, deckCardDistance * pile.childCount, 0);
+            card.transform.SetParent(pile, true);
+
+            card.transform.LeanMoveLocal(destination, 0.3f);
+            playerController.OnPutCardInPile(card);
+            yield return new WaitForSeconds(waitTime);
+        }
+        playerController.OnTurnFinished();
+    }
+
+    public void SetOpponentHandCardInPile(Transform cardTransform)
+    {
+        Vector3 destination = new Vector3(0, deckCardDistance * pile.childCount, 0);
+        cardTransform.SetParent(pile, true);
+        cardTransform.LeanMoveLocal(destination, 0.3f);
+        cardTransform.LeanRotateZ(0, 0.3f);
+    }
+
+    public Transform GetOpponentHandCard()
+    {
+        return opponentHand.GetChild(opponentHand.childCount - 1);
     }
 
     public int GetTopPileCardClass()

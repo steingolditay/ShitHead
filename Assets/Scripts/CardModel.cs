@@ -10,6 +10,12 @@ public class CardModel
         this.cardClass = cardClass;
         this.cardFlavour = cardFlavour;
     }
+
+    public CardModel(int cardClass, string cardFlavour)
+    {
+        this.cardClass = cardClass;
+        this.cardFlavour = Utils.GetCardFlavourForString(cardFlavour);
+    }
 }
 
 

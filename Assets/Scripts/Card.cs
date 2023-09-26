@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -7,19 +8,24 @@ public class Card : MonoBehaviour
     private GameMaster gameMaster;
     private Image frontImage, coverImage;
     private GameObject highlight;
+    private GameObject selection;
     private Vector3 originalScale = Vector3.zero;
     private CardModel cardModel;
 
     private bool isHoverdOn = false;
     private bool isHighlighted = false;
     private bool isOnSelectionStage = false;
+    private bool isSelected = false;
     
     void Awake()
     {
+        gameMaster = GameMaster.Singleton;
+
         frontImage = transform.Find("Front").transform.Find("Image").GetComponent<Image>();
         coverImage = transform.Find("Cover").transform.Find("Image").GetComponent<Image>();
         highlight = transform.Find("Highlight").gameObject;
-        
+        selection = transform.Find("Selection").gameObject;
+
         ToggleHighlight(false);
         originalScale.x = transform.localScale.x / 20;
         originalScale.y = transform.localScale.y;
@@ -28,7 +34,6 @@ public class Card : MonoBehaviour
         Color frontImageColor = frontImage.color;
         frontImageColor.a = 0;
         frontImage.color = frontImageColor;
-        gameMaster = GameMaster.Singleton;
 
     }
 
@@ -87,15 +92,11 @@ public class Card : MonoBehaviour
             return;
         }
         
-        if (IsMyTurn())
+        if (IsMyTurn() && CardIsInMyHand() && CanPlayerCard())
         {
-            if (transform.parent == gameMaster.GetPlayerHand())
-            {
-                if (Utils.CanPlayCard(cardModel.cardClass, gameMaster.GetTopPileCardClass()))
-                {
-                    gameMaster.PutCardFromPlayerHandInPile(this);
-                }
-            }
+            ToggleHighlight(false);
+            ToggleSelection(false);
+            gameMaster.PutCardFromPlayerHandInPile(this);
 
         }
     }
@@ -105,26 +106,61 @@ public class Card : MonoBehaviour
         highlight.SetActive(state);
     }
 
+    public void ToggleSelection(bool state)
+    {
+        selection.SetActive(state);
+    }
+
 
     private void OnMouseEnter()
     {
-        if (transform.parent == gameMaster.GetPlayerHand() && !isHoverdOn)
+        if (CardIsInMyHand() && !isHoverdOn)
         {
             isHoverdOn = true;
-            transform.LeanScale(new Vector3(originalScale.x * 1.1f, originalScale.y , originalScale.z * 1.1f), 0.1f);
-            if (Utils.CanPlayCard(cardModel.cardClass, gameMaster.GetTopPileCardClass()))
+            if (!isSelected)
+            {
+                ToggleRaised(true);
+            }
+            if (IsMyTurn() && CanPlayerCard() && !isSelected)
             {
                 ToggleHighlight(true);
             }
         }
     }
-    
+//
+    private void OnMouseOver()
+    {
+        if (IsMyTurn() && CardIsInMyHand() && CanPlayerCard())
+        {
+            if (Input.GetMouseButtonUp(1))
+            {
+                isSelected = !isSelected;
+                ToggleSelection(isSelected);
+                ToggleHighlight(false);
+                ToggleRaised(true);
+                gameMaster.OnCardSelected(this, isSelected);
+            }
+        }
+    }
+
+    public void DisableSelection()
+    {
+        isSelected = false;
+        ToggleSelection(false);
+        ToggleHighlight(false);
+        ToggleRaised(false);
+    }
+
     private void OnMouseExit()
     {
-        if (transform.parent == gameMaster.GetPlayerHand() && isHoverdOn)
+        if (CardIsInMyHand() && isHoverdOn)
         {
             isHoverdOn = false;
-            transform.LeanScale(new Vector3(originalScale.x, originalScale.y, originalScale.z), 0.1f);
+            if (!isSelected)
+            {
+                ToggleRaised(false);
+                transform.LeanScale(new Vector3(originalScale.x, originalScale.y, originalScale.z), 0.1f);
+            }
             ToggleHighlight(false);
         }    
     }
@@ -132,5 +168,23 @@ public class Card : MonoBehaviour
     private bool IsMyTurn()
     {
         return gameMaster.GetCurrentPlayerTurn() == GameMaster.PlayerTurn.Player;
+    }
+
+    private void ToggleRaised(bool state)
+    {
+        float x = state ? originalScale.x * 1.1f : originalScale.x;
+        float z = state ? originalScale.z * 1.1f : originalScale.z;
+        transform.LeanScale(new Vector3(x, originalScale.y, z), 0.1f);
+
+    }
+
+    private bool CardIsInMyHand()
+    {
+        return transform.parent == gameMaster.GetPlayerHand();
+    }
+
+    private bool CanPlayerCard()
+    {
+        return Utils.CanPlayCard(GetCardClass(), gameMaster.GetTopPileCardClass());
     }
 }

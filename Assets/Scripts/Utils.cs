@@ -99,7 +99,7 @@ public static class Utils
 
     public static bool CanPlayCard(int cardToPlay, int onCard)
     {
-        if (onCard == 0)
+        if (onCard == 0 || onCard == 14 || onCard == 2 || onCard == 4)
         {
             return true;
         }
