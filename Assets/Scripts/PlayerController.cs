@@ -180,6 +180,7 @@ public class PlayerController : NetworkBehaviour
     {
         if (id != GetId())
         {
+            gameMaster.opponentPlayedTurn = true;
             Transform cardTransform = gameMaster.GetOpponentHandCard();
             cardTransform.GetComponent<Card>().SetCardModel(new CardModel(cardClass, cardFlavour));
             gameMaster.SetOpponentHandCardInPile(cardTransform);
@@ -238,11 +239,23 @@ public class PlayerController : NetworkBehaviour
         }
         else
         {
+            gameMaster.opponentPlayedTurn = true;
             gameMaster.OpponentDrawCardFromDeck();
         }
     }
 
+    [ServerRpc(RequireOwnership = false)]
+    void ClearPileToGraveyard_ServerRpc(ulong id)
+    {
+        ClearPileToGraveyard_ClientRpc(id);
+    }
 
+    [ClientRpc]
+    void ClearPileToGraveyard_ClientRpc(ulong id)
+    {
+        StartCoroutine(gameMaster.ClearPileToGraveyard(id == GetId()));
+    }
+    
     public void OnPutCardInPile(Card card)
     {
         SetOpponentHandCardInPile_ServerRpc(GetId(), card.GetCardClass(), card.GetCardFlavour().ToString());
@@ -256,24 +269,46 @@ public class PlayerController : NetworkBehaviour
 
     }
 
-    private void OnDrawMissingCardsFromDeck(ulong id)
-    {
-        DrawMissingCards_ServerRpc(id);
-    }
 
     public void OnTurnFinished()
     {
         ulong id = GetId();
-        OnDrawMissingCardsFromDeck(id);
-        TurnFinished_ServerRpc(id);
+        Task drawMissingCards = new Task(DrawMissingCards(), false);
+        drawMissingCards.Finished += delegate
+        {
+            TurnFinished_ServerRpc(id);
+        };
+        drawMissingCards.Start();
+
     }
 
-    private ulong GetId()
+    public IEnumerator DrawMissingCards()
+    {
+        ulong id = GetId();
+        int deckCards = gameMaster.GetDeckCardsCount();
+        int cardsInHand = gameMaster.GetPlayerHand().childCount;
+        int cardsToDraw = (deckCards > 0 && cardsInHand < 3) ? Mathf.Min(deckCards, 3 - cardsInHand) : 0;
+        if (cardsToDraw > 0)
+        {
+            for (int i = 0; i < cardsToDraw; i++)
+            {
+                DrawMissingCards_ServerRpc(id);
+                yield return new WaitForSeconds(0.5f);
+            }
+            yield return new WaitForSeconds(0.5f);
+        }
+    }
+
+    public void OnClearPileToGraveyard()
+    {
+        ClearPileToGraveyard_ServerRpc(GetId());
+    }
+
+    public ulong GetId()
     {
         return NetworkManager.Singleton.LocalClientId;
     }
 
-    
     private IEnumerator DealHandsToClients()
     {
         IReadOnlyList<ulong> clientIds = NetworkManager.Singleton.ConnectedClientsIds;

@@ -16,6 +16,7 @@ public class Card : MonoBehaviour
     private bool isHighlighted = false;
     private bool isOnSelectionStage = false;
     private bool isSelected = false;
+    private bool canStick = false;
     
     void Awake()
     {
@@ -52,6 +53,11 @@ public class Card : MonoBehaviour
         cardModel = model;
         SetFront( Utils.GetSpriteForCardModel(model));;
         
+    }
+
+    public void SetCanStick(bool state)
+    {
+        canStick = state;
     }
 
     private void SetFront(Sprite front)
@@ -96,8 +102,14 @@ public class Card : MonoBehaviour
         {
             ToggleHighlight(false);
             ToggleSelection(false);
-            gameMaster.PutCardFromPlayerHandInPile(this);
+            gameMaster.PutCardFromPlayerHandInPile(this, false);
 
+        } 
+        else if (!IsMyTurn() && !gameMaster.opponentPlayedTurn && canStick)
+        {
+            ToggleHighlight(false);
+            ToggleSelection(false);
+            gameMaster.PutCardFromPlayerHandInPile(this, true);
         }
     }
 
@@ -121,7 +133,8 @@ public class Card : MonoBehaviour
             {
                 ToggleRaised(true);
             }
-            if (IsMyTurn() && CanPlayerCard() && !isSelected)
+            if ((IsMyTurn() && CanPlayerCard() && !isSelected) ||
+                (!IsMyTurn() && !gameMaster.opponentPlayedTurn && canStick))
             {
                 ToggleHighlight(true);
             }
@@ -170,7 +183,7 @@ public class Card : MonoBehaviour
         return gameMaster.GetCurrentPlayerTurn() == GameMaster.PlayerTurn.Player;
     }
 
-    private void ToggleRaised(bool state)
+    public void ToggleRaised(bool state)
     {
         float x = state ? originalScale.x * 1.1f : originalScale.x;
         float z = state ? originalScale.z * 1.1f : originalScale.z;

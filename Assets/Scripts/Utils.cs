@@ -112,25 +112,25 @@ public static class Utils
              case 3:
                  return true;
              case 4:
-                 return onCard <= 4 || onCard == 7;
+                 return onCard > 1 && (onCard <= 4 || onCard == 7);
              case 5: 
-                 return onCard <= 5 || onCard == 7;
+                 return onCard > 1 && (onCard <= 5 || onCard == 7);
              case 6: 
-                 return onCard <= 5 || onCard == 7;
+                 return onCard > 1 && (onCard <= 6 || onCard == 7);
              case 7:
-                 return onCard <= 7;
+                 return onCard > 1 && onCard <= 7;
              case 8:
-                 return onCard <= 8 && onCard != 7;
+                 return onCard > 1 && onCard <= 8 && onCard != 7;
              case 9:
-                 return onCard <= 9 && onCard != 7;
+                 return onCard > 1 && onCard <= 9 && onCard != 7;
              case 10:
                  return onCard != 7;
              case 11:
-                 return onCard <= 11 && onCard != 7;
+                 return onCard > 1 && onCard <= 11 && onCard != 7;
              case 12:
-                 return onCard <= 12 && onCard != 7;
+                 return onCard > 1 && onCard <= 12 && onCard != 7;
              case 13:
-                 return onCard <= 13 && onCard != 7;
+                 return onCard > 1 && onCard <= 13 && onCard != 7;
              case 14:
                  return true;
              default: 

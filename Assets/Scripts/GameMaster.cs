@@ -37,9 +37,8 @@ public class GameMaster : MonoBehaviour
     [SerializeField] private Transform playerSelectionCard5;
     [SerializeField] private Transform playerSelectionCard6;
 
-    [Header("Turn Indicators")] [SerializeField]
-    private Renderer playerTurnIndicator;
-
+    [Header("Turn Indicators")] 
+    [SerializeField] private Renderer playerTurnIndicator;
     [SerializeField] private Renderer opponentTurnIndicator;
     [SerializeField] private Material playerTurnIndicatorMaterial;
     [SerializeField] private Material opponentTurnIndicatorMaterial;
@@ -69,6 +68,7 @@ public class GameMaster : MonoBehaviour
     public int playersReady = 0;
     public ulong firstPlayerToStart = 0;
     private PlayerTurn currentPlayerTurn = PlayerTurn.None;
+    public bool opponentPlayedTurn = false;
 
 
     private void OnEnable()
@@ -119,6 +119,20 @@ public class GameMaster : MonoBehaviour
         opponentTurnIndicator.material =
             player == PlayerTurn.Player ? turnIndicatorOffMaterial : opponentTurnIndicatorMaterial;
 
+        if (currentPlayerTurn == PlayerTurn.Opponent)
+        {
+            opponentPlayedTurn = false;
+        }
+        else
+        {
+            for (int i = 0; i < playerHand.childCount; i++)
+            {
+                Card card = playerHand.GetChild(i).GetComponent<Card>();
+                card.SetCanStick(false);
+            }
+
+        }
+
     }
 
     public PlayerTurn GetCurrentPlayerTurn()
@@ -154,7 +168,7 @@ public class GameMaster : MonoBehaviour
     public void ShuffleCards()
     {
         cardModels = Utils.GetAllCardModels();
-
+        
         for (int i = 0; i < cardModels.Count - 1; i++)
         {
             CardModel temp = cardModels[i];
@@ -162,6 +176,61 @@ public class GameMaster : MonoBehaviour
             cardModels[i] = cardModels[random];
             cardModels[random] = temp;
         }
+        
+        
+        // test
+        
+        // Table Cards //
+        // Collection<CardModel> list = new Collection<CardModel>();
+        // list.Add(new CardModel(4, CardFlavour.Diamond));
+        // list.Add(new CardModel(4, CardFlavour.Club));
+        // list.Add(new CardModel(5, CardFlavour.Diamond));
+        // list.Add(new CardModel(5, CardFlavour.Club));
+        // list.Add(new CardModel(6, CardFlavour.Diamond));
+        // list.Add(new CardModel(6, CardFlavour.Club));
+        //
+        // // Selection Cards //
+        // list.Add(new CardModel(7, CardFlavour.Diamond));
+        // list.Add(new CardModel(7, CardFlavour.Club));
+        //
+        // list.Add(new CardModel(8, CardFlavour.Diamond));
+        // list.Add(new CardModel(8, CardFlavour.Club));
+        //
+        // list.Add(new CardModel(9, CardFlavour.Diamond));
+        // list.Add(new CardModel(9, CardFlavour.Club));
+        //
+        // list.Add(new CardModel(11, CardFlavour.Diamond));
+        // list.Add(new CardModel(12, CardFlavour.Diamond));
+        //
+        // list.Add(new CardModel(11, CardFlavour.Club));
+        // list.Add(new CardModel(12, CardFlavour.Club));
+        //
+        // list.Add(new CardModel(11, CardFlavour.Spade));
+        // list.Add(new CardModel(12, CardFlavour.Spade));
+        //
+        // // First Card //
+        // list.Add(new CardModel(8, CardFlavour.Heart));
+        //
+        // // Deck Cards //
+        //
+        // list.Add(new CardModel(11, CardFlavour.Heart));
+        // list.Add(new CardModel(12, CardFlavour.Heart));
+        //
+        // list.Add(new CardModel(10, CardFlavour.Diamond));
+        // list.Add(new CardModel(10, CardFlavour.Club));
+        // list.Add(new CardModel(10, CardFlavour.Spade));
+        // list.Add(new CardModel(10, CardFlavour.Heart));
+        // list.Add(new CardModel(9, CardFlavour.Diamond));
+        // list.Add(new CardModel(9, CardFlavour.Club));
+        // list.Add(new CardModel(9, CardFlavour.Spade));
+        // list.Add(new CardModel(9, CardFlavour.Heart));
+        // list.Add(new CardModel(1, CardFlavour.Diamond));
+        // list.Add(new CardModel(1, CardFlavour.Club));
+        // list.Add(new CardModel(1, CardFlavour.Spade));
+        // list.Add(new CardModel(1, CardFlavour.Heart));
+
+        
+        cardModels = list;
     }
 
     public void DealPlayerTableCard(CardModel cardModel, int number)
@@ -263,6 +332,10 @@ public class GameMaster : MonoBehaviour
         Transform cardTransform = GetTopDeckCard();
         Card card = cardTransform.GetComponent<Card>();
         card.SetCardModel(cardModel);
+        if (cardModel.cardClass == GetAbsoluteTopPileCardClass())
+        {
+            card.SetCanStick(true);
+        }
         cardTransform.SetParent(playerHand, true);
 
         Vector3 cardPosition = Utils.SortPlayerHand(playerHand, cardTransform.gameObject);
@@ -452,7 +525,7 @@ public class GameMaster : MonoBehaviour
         return deck.GetChild(deck.childCount - 1);
     }
 
-    public void PutCardFromPlayerHandInPile(Card card)
+    public void PutCardFromPlayerHandInPile(Card card, bool isStick)
     {
 
         List<Card> cardsToPlay = new List<Card>();
@@ -470,23 +543,103 @@ public class GameMaster : MonoBehaviour
             cardToPlay.DisableSelection();
         }
 
-        StartCoroutine(PlayCards(cardsToPlay));
+        StartCoroutine(PlayCards(cardsToPlay, isStick));
     }
 
-    private IEnumerator PlayCards(List<Card> cards)
+    private IEnumerator PlayCards(List<Card> cards, bool isStick)
     {
-        float waitTime = cards.Count > 1 ? 0.3f : 0f;
+        bool isEights = cards[0].GetCardClass() == 8;
+        bool isTens = cards[0].GetCardClass() == 10;
+        bool isJoker = cards[0].GetCardClass() == 14;
+        
         foreach (Card card in cards)
         {
+            card.ToggleHighlight(false);
+            card.ToggleSelection(false);
+            card.ToggleRaised(false);
             Vector3 destination = new Vector3(0, deckCardDistance * pile.childCount, 0);
             card.transform.SetParent(pile, true);
 
             card.transform.LeanMoveLocal(destination, 0.3f);
             playerController.OnPutCardInPile(card);
-            yield return new WaitForSeconds(waitTime);
+            yield return new WaitForSeconds(0.3f);
         }
-        playerController.OnTurnFinished();
+        yield return new WaitForSeconds(0.1f);
+        // if top 4 are the same > boom
+        if (IsBoom() || isTens)
+        {
+            playerController.OnClearPileToGraveyard();
+            yield break;
+        }
+
+        if (!isStick)
+        {
+            if (!isEights || cards.Count == 1 || cards.Count == 3)
+            {
+                playerController.OnTurnFinished();
+            }
+            else if (ShouldDrawCards())
+            {
+                StartCoroutine(playerController.DrawMissingCards());
+            }
+            yield break;
+        }
+
+
+        if (ShouldDrawCards())
+        {
+            StartCoroutine(playerController.DrawMissingCards());
+        }
+        else
+        {
+            Utils.SortPlayerHand(playerHand, null);
+        }
     }
+
+    private bool ShouldDrawCards()
+    {
+        int deckCards = GetDeckCardsCount();
+        int cardsInHand = GetPlayerHand().childCount;
+        return deckCards > 0 && cardsInHand < 3;
+    }
+
+    private bool IsBoom()
+    {
+        if (pile.childCount < 4)
+        {
+            return false;
+        }
+
+        List<Card> topFourCards = new List<Card>();
+        for (int i = pile.childCount - 1; i >= 0; i--)
+        {
+            topFourCards.Add(pile.GetChild(i).GetComponent<Card>());
+        }
+        List<Card> filteredList = topFourCards.FindAll(cards => cards.GetCardClass() == topFourCards[0].GetCardClass());
+        return filteredList.Count == 4;
+    }
+
+    public IEnumerator ClearPileToGraveyard(bool isMe)
+    {
+
+        for (int i = pile.childCount - 1; i >= 0; i--)
+        {
+            Transform cardTransform = pile.GetChild(i);
+            cardTransform.SetParent(graveyard, true);
+            Vector3 destination = Vector3.zero;
+            destination.y = graveyard.childCount * deckCardDistance;
+            cardTransform.LeanMoveLocal(destination, 0.3f);
+            cardTransform.LeanRotateZ(180, 0.3f);
+            yield return new WaitForSeconds(0.2f);
+        }
+
+
+        if (isMe && ShouldDrawCards())
+        {
+            StartCoroutine(playerController.DrawMissingCards());
+        }
+    }
+
 
     public void SetOpponentHandCardInPile(Transform cardTransform)
     {
@@ -501,6 +654,23 @@ public class GameMaster : MonoBehaviour
         return opponentHand.GetChild(opponentHand.childCount - 1);
     }
 
+    public int GetDeckCardsCount()
+    {
+        return deck.childCount;
+    }
+    
+    private int GetAbsoluteTopPileCardClass()
+    {
+        if (pile.childCount > 0)
+        {
+            return pile.GetChild(pile.childCount - 1).GetComponent<Card>().GetCardClass();
+        }
+
+        return 0;
+
+    }
+
+
     public int GetTopPileCardClass()
     {
         if (pile.childCount == 0)
@@ -510,7 +680,7 @@ public class GameMaster : MonoBehaviour
 
         for (int i = pile.childCount - 1; i >= 0; i--)
         {
-            int cardClass = pile.GetChild(pile.childCount - 1).GetComponent<Card>().GetCardClass();
+            int cardClass = pile.GetChild(i).GetComponent<Card>().GetCardClass();
             if (cardClass != 3)
             {
                 return cardClass;
