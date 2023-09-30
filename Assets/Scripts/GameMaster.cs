@@ -230,7 +230,7 @@ public class GameMaster : MonoBehaviour
         // list.Add(new CardModel(1, CardFlavour.Heart));
 
         
-        cardModels = list;
+        // cardModels = list;
     }
 
     public void DealPlayerTableCard(CardModel cardModel, int number)
@@ -322,9 +322,9 @@ public class GameMaster : MonoBehaviour
 
     }
 
-    public void PlayerDrawCardFromDeck()
+    public void PlayerTakePile()
     {
-        playerController.OnDrawCard();
+        playerController.OnTakePile();
     }
 
     public void PlayerDrawMissingCardsFromDeck(CardModel cardModel)
@@ -565,7 +565,13 @@ public class GameMaster : MonoBehaviour
             yield return new WaitForSeconds(0.3f);
         }
         yield return new WaitForSeconds(0.1f);
-        // if top 4 are the same > boom
+
+        if (isJoker)
+        {
+            playerController.OnJokerPlayed();
+            yield break;
+        }
+        
         if (IsBoom() || isTens)
         {
             playerController.OnClearPileToGraveyard();
@@ -582,6 +588,8 @@ public class GameMaster : MonoBehaviour
             {
                 StartCoroutine(playerController.DrawMissingCards());
             }
+            Utils.SortPlayerHand(playerHand, null);
+
             yield break;
         }
 
@@ -639,8 +647,7 @@ public class GameMaster : MonoBehaviour
             StartCoroutine(playerController.DrawMissingCards());
         }
     }
-
-
+    
     public void SetOpponentHandCardInPile(Transform cardTransform)
     {
         Vector3 destination = new Vector3(0, deckCardDistance * pile.childCount, 0);
@@ -652,6 +659,42 @@ public class GameMaster : MonoBehaviour
     public Transform GetOpponentHandCard()
     {
         return opponentHand.GetChild(opponentHand.childCount - 1);
+    }
+
+    public IEnumerator OpponentTakePileToHand(bool isJoker)
+    {
+        for (int i = pile.childCount - 1; i >= 0; i--)
+        {
+            Transform cardTransform = pile.GetChild(i);
+            cardTransform.SetParent(opponentHand, true);
+            cardTransform.LeanRotateZ(180, 0.3f);
+        }
+        Utils.SortOpponentHand(opponentHand, null);
+
+        yield return new WaitForSeconds(0.5f);
+
+        if (currentPlayerTurn == PlayerTurn.Player && isJoker)
+        {
+            playerController.OnTurnFinished();
+        }
+    }
+    
+    public IEnumerator PlayerTakePileToHand(bool isJoker)
+    {
+        for (int i = pile.childCount - 1; i >= 0; i--)
+        {
+            Transform cardTransform = pile.GetChild(i);
+            cardTransform.SetParent(playerHand, true);
+        }
+        Utils.SortPlayerHand(playerHand, null);
+
+        yield return new WaitForSeconds(0.5f);
+
+        if (currentPlayerTurn == PlayerTurn.Player && !isJoker)
+        {
+            playerController.OnTurnFinished();
+        }
+
     }
 
     public int GetDeckCardsCount()
@@ -669,8 +712,7 @@ public class GameMaster : MonoBehaviour
         return 0;
 
     }
-
-
+    
     public int GetTopPileCardClass()
     {
         if (pile.childCount == 0)

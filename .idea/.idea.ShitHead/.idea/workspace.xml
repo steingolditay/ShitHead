@@ -3,17 +3,19 @@
   <component name="ChangeListManager">
     <list default="true" id="a4488e7f-0788-4756-ae03-c9e170adf089" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.ShitHead/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.ShitHead/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Lava_Flowing_Shader/Materials/mtl_lava_blue_simple.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Lava_Flowing_Shader/Materials/mtl_lava_blue_simple.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assembly-CSharp.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/Assembly-CSharp.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/DeckScript.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/DeckScript.cs.meta" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Lava_Flowing_Shader/Materials/mtl_lava_simple 1.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Lava_Flowing_Shader/Materials/mtl_lava_simple 1.mat" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Plugins/IngameDebugConsole/IngameDebugConsole.prefab" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/IngameDebugConsole/IngameDebugConsole.prefab" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Card.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Card.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scenes/SampleScene.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scenes/SampleScene.unity" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scripts/GameMaster.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/GameMaster.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scripts/PlayerController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/PlayerController.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Utils.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Utils.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Builds/Shithead_BurstDebugInformation_DoNotShip/Data/Plugins/x86_64/lib_burst_generated.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Builds/Shithead_BurstDebugInformation_DoNotShip/Data/Plugins/x86_64/lib_burst_generated.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Builds/Shithead_Data/globalgamemanagers.assets" beforeDir="false" afterPath="$PROJECT_DIR$/Builds/Shithead_Data/globalgamemanagers.assets" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Builds/Shithead_Data/level0" beforeDir="false" afterPath="$PROJECT_DIR$/Builds/Shithead_Data/level0" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Library/Artifacts/b4/b4fe0c35bd6a742dd07e996e479fc8e5" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Library/Bee/1900b0aP-inputdata.json" beforeDir="false" afterPath="$PROJECT_DIR$/Library/Bee/1900b0aP-inputdata.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Library/Bee/1900b0aP.dag" beforeDir="false" afterPath="$PROJECT_DIR$/Library/Bee/1900b0aP.dag" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Library/Bee/1900b0aP.dag.json" beforeDir="false" afterPath="$PROJECT_DIR$/Library/Bee/1900b0aP.dag.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -29,7 +31,6 @@
     <setting file="mock:///Dummy.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/695d1cc93cca45069c528c15c9fdd7493e2800/85/3056996c/Collection`1.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/963c3a1707f0469aac8b8356a8d18b5d6e00/b6/ad8b0d8a/Input.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/Assets/DeckScript.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Library/PackageCache/com.unity.netcode.gameobjects@1.6.0/Editor/NetworkManagerEditor.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Library/PackageCache/com.unity.netcode.gameobjects@1.6.0/Runtime/Core/NetworkManager.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Library/PackageCache/com.unity.netcode.gameobjects@1.6.0/Runtime/Messaging/Messages/RpcMessages.cs" root0="SKIP_HIGHLIGHTING" />
@@ -108,7 +109,7 @@
       <workItem from="1693760494758" duration="4424000" />
       <workItem from="1694726028911" duration="20779000" />
       <workItem from="1694810059676" duration="36749000" />
-      <workItem from="1695555990562" duration="38791000" />
+      <workItem from="1695555990562" duration="43327000" />
     </task>
     <servers />
   </component>
@@ -128,36 +129,36 @@
           <line>336</line>
           <properties documentPath="D:\Unity\ShitHead\Assets\Scripts\GameMaster.cs" initialLine="272" containingFunctionPresentation="method 'PlayerDrawMissingCardsFromDeck'">
             <startOffsets>
-              <option value="11122" />
+              <option value="11117" />
             </startOffsets>
             <endOffsets>
-              <option value="11145" />
+              <option value="11140" />
             </endOffsets>
           </properties>
           <option name="timeStamp" value="16" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="DotNet Breakpoints">
           <url>file://$PROJECT_DIR$/Assets/Scripts/GameMaster.cs</url>
-          <line>568</line>
+          <line>574</line>
           <properties documentPath="D:\Unity\ShitHead\Assets\Scripts\GameMaster.cs" initialLine="539" containingFunctionPresentation="method 'PlayCards'">
             <startOffsets>
-              <option value="18199" />
+              <option value="18276" />
             </startOffsets>
             <endOffsets>
-              <option value="18222" />
+              <option value="18299" />
             </endOffsets>
           </properties>
           <option name="timeStamp" value="20" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="DotNet Breakpoints">
           <url>file://$PROJECT_DIR$/Assets/Scripts/GameMaster.cs</url>
-          <line>636</line>
+          <line>644</line>
           <properties documentPath="D:\Unity\ShitHead\Assets\Scripts\GameMaster.cs" initialLine="596" containingFunctionPresentation="method 'ClearPileToGraveyard'">
             <startOffsets>
-              <option value="20091" />
+              <option value="20221" />
             </startOffsets>
             <endOffsets>
-              <option value="20121" />
+              <option value="20251" />
             </endOffsets>
           </properties>
           <option name="timeStamp" value="22" />

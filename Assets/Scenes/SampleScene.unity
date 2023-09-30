@@ -534,9 +534,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a80821be6e9566e4cb81c6cd81b6dfd8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  slotPlayer: {fileID: 1688677082}
-  slotOpponent: {fileID: 114109531}
-  gameMaster: {fileID: 0}
 --- !u!114 &233783633
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -847,8 +844,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 398211128}
-  - component: {fileID: 398211130}
-  - component: {fileID: 398211129}
   m_Layer: 0
   m_Name: Deck
   m_TagString: Untagged
@@ -870,31 +865,6 @@ Transform:
   m_Father: {fileID: 695160604}
   m_RootOrder: 11
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!65 &398211129
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 398211127}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 1
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Size: {x: 0.1, y: 0.2, z: 0.25}
-  m_Center: {x: 0, y: 0.1, z: 0}
---- !u!114 &398211130
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 398211127}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f2c3f13a1f0a3d44191c7cef42dbe8f8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &411484172
 GameObject:
   m_ObjectHideFlags: 0
@@ -4180,6 +4150,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1346305256}
+  - component: {fileID: 1346305258}
+  - component: {fileID: 1346305257}
   m_Layer: 0
   m_Name: Pile
   m_TagString: Untagged
@@ -4201,6 +4173,31 @@ Transform:
   m_Father: {fileID: 695160604}
   m_RootOrder: 10
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1346305257
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1346305255}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f2c3f13a1f0a3d44191c7cef42dbe8f8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!65 &1346305258
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1346305255}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 1
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 0.1, y: 0.2, z: 0.25}
+  m_Center: {x: 0, y: 0.1, z: 0}
 --- !u!1 &1401993950
 GameObject:
   m_ObjectHideFlags: 0

@@ -222,27 +222,6 @@ public class PlayerController : NetworkBehaviour
             gameMaster.OpponentDrawCardFromDeck();
         }
     }
-    
-    [ServerRpc(RequireOwnership = false)]
-    void DrawCard_ServerRpc(ulong id)
-    {
-        CardModel cardModel = gameMaster.GetTopDeckCardModel();
-        DrawCard_ClientRpc(id, cardModel.cardClass, cardModel.cardFlavour.ToString());
-    }
-
-    [ClientRpc]
-    void DrawCard_ClientRpc(ulong id, int cardClass, string cardFlavour)
-    {
-        if (id == GetId())
-        {
-            gameMaster.PlayerDrawMissingCardsFromDeck(new CardModel(cardClass, cardFlavour));
-        }
-        else
-        {
-            gameMaster.opponentPlayedTurn = true;
-            gameMaster.OpponentDrawCardFromDeck();
-        }
-    }
 
     [ServerRpc(RequireOwnership = false)]
     void ClearPileToGraveyard_ServerRpc(ulong id)
@@ -255,17 +234,40 @@ public class PlayerController : NetworkBehaviour
     {
         StartCoroutine(gameMaster.ClearPileToGraveyard(id == GetId()));
     }
+
+    [ServerRpc(RequireOwnership = false)]
+    void PlayerTakePileToHand_ServerRpc(ulong playedBy, bool isJoker)
+    {
+        PlayerTakePileToHand_ClientRpc(playedBy, isJoker);
+    }
+
+    [ClientRpc]
+    void PlayerTakePileToHand_ClientRpc(ulong playedBy, bool isJoker)
+    {
+        bool playedByMe = playedBy == GetId();
+        if ((playedByMe && isJoker) || (!playedByMe && !isJoker))
+        {
+            StartCoroutine(gameMaster.OpponentTakePileToHand(isJoker));
+        }
+        else
+        {
+            StartCoroutine(gameMaster.PlayerTakePileToHand(isJoker));
+        }
+    }
     
     public void OnPutCardInPile(Card card)
     {
         SetOpponentHandCardInPile_ServerRpc(GetId(), card.GetCardClass(), card.GetCardFlavour().ToString());
     }
 
-    public void OnDrawCard()
+    public void OnJokerPlayed()
     {
-        ulong id = GetId();
-        DrawCard_ServerRpc(id);
-        TurnFinished_ServerRpc(id);
+        PlayerTakePileToHand_ServerRpc(GetId(), true);
+    }
+
+    public void OnTakePile()
+    {
+        PlayerTakePileToHand_ServerRpc(GetId(), false);
 
     }
 

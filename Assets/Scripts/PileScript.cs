@@ -1,10 +1,7 @@
 
-
-
-using System;
 using UnityEngine;
 
-public class DeckScript : MonoBehaviour
+public class PileScript : MonoBehaviour
 {
     private GameMaster gameMaster;
 
@@ -16,7 +13,7 @@ public class DeckScript : MonoBehaviour
 
     private void OnMouseEnter()
     {
-        if (IsMyTurn() && DeckHasCards())
+        if (IsMyTurn() && PileHasCards())
         {
             HighlightTopDeckCard(true);
 
@@ -25,15 +22,15 @@ public class DeckScript : MonoBehaviour
 
     private void OnMouseUp()
     {
-        if (IsMyTurn() && DeckHasCards())
+        if (IsMyTurn() && PileHasCards())
         {
-            gameMaster.PlayerDrawCardFromDeck();
+            gameMaster.PlayerTakePile();
         }
     }
 
     private void OnMouseExit()
     {
-        if (IsMyTurn() && DeckHasCards())
+        if (IsMyTurn() && PileHasCards())
         {
             HighlightTopDeckCard(false);
         }
@@ -45,14 +42,14 @@ public class DeckScript : MonoBehaviour
         return gameMaster.GetCurrentPlayerTurn() == GameMaster.PlayerTurn.Player;
     }
 
-    private bool DeckHasCards()
+    private bool PileHasCards()
     {
         return transform.childCount > 0;
     }
 
     private void HighlightTopDeckCard(bool state)
     {
-        gameMaster.GetTopDeckCard().GetComponent<Card>().ToggleHighlight(state);
+        transform.GetChild(transform.childCount -1).GetComponent<Card>().ToggleHighlight(state);
 
     }
 }
