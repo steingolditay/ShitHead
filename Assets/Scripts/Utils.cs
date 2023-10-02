@@ -26,16 +26,23 @@ public static class Utils
         
         return list;
     }
-
-
+    
     public static Vector3 SortOpponentHand(Transform opponentHand, GameObject newCard) 
     {
+        if (opponentHand.childCount == 0)
+        {
+            return Vector3.zero;
+        }
         Collection<GameObject> opponentCards = GetExistingCardObjectsInSlot(opponentHand);
         return SortHand(opponentCards, newCard);
     }
     
     public static Vector3 SortPlayerHand(Transform playerHand, GameObject newCard)
     {
+        if (playerHand.childCount == 0)
+        {
+            return Vector3.zero;
+        }
         Collection<GameObject> playerCards = GetExistingCardObjectsInSlot(playerHand);
         List<GameObject> orderedList = playerCards.OrderBy(card => card.GetComponent<Card>().GetCardClass()).ToList();
         return SortHand(orderedList, newCard);
@@ -51,8 +58,7 @@ public static class Utils
 
         return opponentCards;
     }
-
-
+    
     private static Vector3 SortHand(IList<GameObject> slotCards, GameObject newCard)
     { 
         Vector3 newCardPosition = new Vector3();
@@ -178,5 +184,34 @@ public static class Utils
         }
 
         return CardFlavour.Club;
+    }
+    
+    public static bool IsBoom(Transform pile, int cardClass)
+    {
+        if (pile.childCount < 4)
+        {
+            return false;
+        }
+
+        List<Card> topFourCards = new List<Card>();
+        for (int i = pile.childCount - 1; i >= 0; i--)
+        {
+            Card pileCard = pile.GetChild(i).GetComponent<Card>();
+            if (pileCard.GetCardClass() == 3)
+            {
+                continue;
+            }  
+            if (pileCard.GetCardClass() != cardClass)
+            {
+                return false;
+            }
+            topFourCards.Add(pileCard);
+            if (topFourCards.Count == 4)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

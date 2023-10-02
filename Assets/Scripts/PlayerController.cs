@@ -175,6 +175,12 @@ public class PlayerController : NetworkBehaviour
         SetOpponentHandCardInPile_ClientRpc(id, cardClass, cardFlavor);
     }
 
+    [ServerRpc(RequireOwnership = false)]
+    void SetOpponentVisibleTableCardInPile_ServerRpc(ulong id, int position)
+    {
+        SetOpponentTableCardInPile_ClientRpc(id, position);
+    }
+
     [ClientRpc]
     void SetOpponentHandCardInPile_ClientRpc(ulong id, int cardClass, string cardFlavour)
     {
@@ -184,6 +190,17 @@ public class PlayerController : NetworkBehaviour
             Transform cardTransform = gameMaster.GetOpponentHandCard();
             cardTransform.GetComponent<Card>().SetCardModel(new CardModel(cardClass, cardFlavour));
             gameMaster.SetOpponentHandCardInPile(cardTransform);
+        }
+    }
+    
+    [ClientRpc]
+    void SetOpponentTableCardInPile_ClientRpc(ulong id, int position)
+    {
+        if (id != GetId())
+        {
+            gameMaster.opponentPlayedTurn = true;
+            Transform cardTransform = gameMaster.GetOpponentTableCard(position, true);
+            gameMaster.SetOpponentTableCardInPile(cardTransform);
         }
     }
 
@@ -258,6 +275,11 @@ public class PlayerController : NetworkBehaviour
     public void OnPutCardInPile(Card card)
     {
         SetOpponentHandCardInPile_ServerRpc(GetId(), card.GetCardClass(), card.GetCardFlavour().ToString());
+    }
+
+    public void OnPutTableCardInPile(int position)
+    {
+        SetOpponentVisibleTableCardInPile_ServerRpc(GetId(), position);
     }
 
     public void OnJokerPlayed()
