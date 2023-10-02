@@ -101,20 +101,20 @@ public class Card : MonoBehaviour
         {
             ToggleHighlight(false);
             ToggleSelection(false);
-            gameMaster.PutCardFromPlayerHandInPile(this, false);
+            gameMaster.PutCardsInPile(this, GameMaster.CardLocation.Hand, false);
 
         } 
         else if (!IsMyTurn() && !gameMaster.opponentPlayedTurn && canStick)
         {
             ToggleHighlight(false);
             ToggleSelection(false);
-            gameMaster.PutCardFromPlayerHandInPile(this, true);
+            gameMaster.PutCardsInPile(this, GameMaster.CardLocation.Hand, true);
         } 
         else if (CardIsVisibleOnMyTable() && CanPlayTableCard())
         {
             ToggleHighlight(false);
             ToggleSelection(false);
-            gameMaster.PutCardFromPlayerTableInPile(this);
+            gameMaster.PutCardsInPile(this, GameMaster.CardLocation.VisibleTable, false);
         }
     }
 

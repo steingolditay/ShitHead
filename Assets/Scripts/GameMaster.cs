@@ -530,35 +530,12 @@ public class GameMaster : MonoBehaviour
         return deck.GetChild(deck.childCount - 1);
     }
     
-
-    public void PutCardFromPlayerHandInPile(Card card, bool isStick)
+    public void PutCardsInPile(Card card, CardLocation cardLocation, bool isStick)
     {
         List<Card> cardsToPlay = new List<Card>();
         if (selectedCards.Count > 0 && selectedCards[0].GetCardClass() == card.GetCardClass())
         {
             cardsToPlay.AddRange(selectedCards);
-        }
-        else
-        {
-            cardsToPlay.Add(card);
-        }
-
-        foreach (Card cardToPlay in cardsToPlay)
-        {
-            cardToPlay.DisableSelection();
-        }
-        selectedCards.Clear();
-
-        StartCoroutine(PlayCards(cardsToPlay, isStick));
-    }
-    
-    public void PutCardFromPlayerTableInPile(Card card)
-    {
-
-        List<Card> cardsToPlay = new List<Card>();
-        if (selectedCards.Count > 0 && selectedCards[0].GetCardClass() == card.GetCardClass())
-        {
-            cardsToPlay = selectedCards;
         }
         else
         {
@@ -570,59 +547,13 @@ public class GameMaster : MonoBehaviour
             cardToPlay.DisableSelection();
         }
         selectedCards.Clear();
-        StartCoroutine(PlayTableCards(cardsToPlay));
+        StartCoroutine(PlayCards(cardsToPlay, cardLocation, isStick));
     }
 
-    private IEnumerator PlayTableCards(List<Card> cards)
+    private IEnumerator PlayCards(List<Card> cards, CardLocation cardLocation, bool isStick)
     {
         int cardClass = cards[0].GetCardClass();
-
-        foreach (Card card in cards)
-        {
-            card.ToggleHighlight(false);
-            card.ToggleSelection(false);
-            card.ToggleRaised(false);
-            int position = GetTableCardPosition(card);
-            Vector3 destination = new Vector3(0, deckCardDistance * pile.childCount, 0);
-            card.transform.SetParent(pile, true);
-
-            card.transform.LeanMoveLocal(destination, 0.3f);
-            playerController.OnPutTableCardInPile(position);
-            yield return new WaitForSeconds(0.3f);
-        }
-
-        yield return new WaitForSeconds(0.1f);
-
-        if (cardClass == 14)
-        {
-            playerController.OnJokerPlayed();
-            yield break;
-        }
-
-        if (Utils.IsBoom(pile, cardClass) || cardClass == 10)
-        {
-            playerController.OnClearPileToGraveyard();
-            yield break;
-        }
-
-        if (cardClass != 8 || (cards.Count == 1 || cards.Count == 3))
-        {
-            playerController.OnTurnFinished();
-        }
-        else if (ShouldDrawCards())
-        {
-            StartCoroutine(playerController.DrawMissingCards());
-        }
-
-        Utils.SortPlayerHand(playerHand, null);
-
-    }
-
-
-
-    private IEnumerator PlayCards(List<Card> cards, bool isStick)
-    {
-        int cardClass = cards[0].GetCardClass();
+        int position = 0;
 
         foreach (Card card in cards)
         {
@@ -630,10 +561,21 @@ public class GameMaster : MonoBehaviour
             card.ToggleSelection(false);
             card.ToggleRaised(false);
             Vector3 destination = new Vector3(0, deckCardDistance * pile.childCount, 0);
+            if (cardLocation == CardLocation.VisibleTable)
+            {
+                position = GetTableCardPosition(card);
+            }
             card.transform.SetParent(pile, true);
 
             card.transform.LeanMoveLocal(destination, 0.3f);
-            playerController.OnPutCardInPile(card);
+
+            if (cardLocation == CardLocation.VisibleTable)
+            {
+                playerController.OnPutTableCardInPile(position);
+            } else if (cardLocation == CardLocation.Hand)
+            {
+                playerController.OnPutCardInPile(card);
+            }
             yield return new WaitForSeconds(0.3f);
         }
         yield return new WaitForSeconds(0.1f);
@@ -664,8 +606,7 @@ public class GameMaster : MonoBehaviour
 
             yield break;
         }
-
-
+        
         if (ShouldDrawCards())
         {
             StartCoroutine(playerController.DrawMissingCards());
@@ -675,6 +616,7 @@ public class GameMaster : MonoBehaviour
             Utils.SortPlayerHand(playerHand, null);
         }
     }
+    //
 
     private bool ShouldDrawCards()
     {
