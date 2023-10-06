@@ -197,10 +197,6 @@ public static class Utils
         for (int i = pile.childCount - 1; i >= 0; i--)
         {
             Card pileCard = pile.GetChild(i).GetComponent<Card>();
-            if (pileCard.GetCardClass() == 3)
-            {
-                continue;
-            }  
             if (pileCard.GetCardClass() != cardClass)
             {
                 return false;

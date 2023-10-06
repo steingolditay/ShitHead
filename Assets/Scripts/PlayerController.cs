@@ -176,9 +176,9 @@ public class PlayerController : NetworkBehaviour
     }
 
     [ServerRpc(RequireOwnership = false)]
-    void SetOpponentVisibleTableCardInPile_ServerRpc(ulong id, int position)
+    void SetOpponentVisibleTableCardInPile_ServerRpc(ulong id, int position, string cardLocation, int cardClass, string cardFlavour)
     {
-        SetOpponentTableCardInPile_ClientRpc(id, position);
+        SetOpponentTableCardInPile_ClientRpc(id, position, cardLocation, cardClass, cardFlavour);
     }
 
     [ClientRpc]
@@ -194,13 +194,20 @@ public class PlayerController : NetworkBehaviour
     }
     
     [ClientRpc]
-    void SetOpponentTableCardInPile_ClientRpc(ulong id, int position)
+    void SetOpponentTableCardInPile_ClientRpc(ulong id, int position, string cardLocation, int cardClass, string cardFlavour)
     {
         if (id != GetId())
         {
+            bool isVisible = cardLocation == GameMaster.CardLocation.VisibleTable.ToString();
             gameMaster.opponentPlayedTurn = true;
-            Transform cardTransform = gameMaster.GetOpponentTableCard(position, true);
+            Transform cardTransform = gameMaster.GetOpponentTableCard(position, isVisible);
+            if (!isVisible)
+            {
+                Card card = cardTransform.GetComponent<Card>();
+                card.SetCardModel(new CardModel(cardClass, Utils.GetCardFlavourForString(cardFlavour)));
+            }
             gameMaster.SetOpponentTableCardInPile(cardTransform);
+
         }
     }
 
@@ -277,9 +284,9 @@ public class PlayerController : NetworkBehaviour
         SetOpponentHandCardInPile_ServerRpc(GetId(), card.GetCardClass(), card.GetCardFlavour().ToString());
     }
 
-    public void OnPutTableCardInPile(int position)
+    public void OnPutTableCardInPile(int position, GameMaster.CardLocation cardLocation, int cardClass, CardFlavour flavour)
     {
-        SetOpponentVisibleTableCardInPile_ServerRpc(GetId(), position);
+        SetOpponentVisibleTableCardInPile_ServerRpc(GetId(), position, cardLocation.ToString(), cardClass, flavour.ToString());
     }
 
     public void OnJokerPlayed()

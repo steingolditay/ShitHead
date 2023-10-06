@@ -554,6 +554,7 @@ public class GameMaster : MonoBehaviour
     {
         int cardClass = cards[0].GetCardClass();
         int position = 0;
+        bool canPlay = Utils.CanPlayCard(cardClass, GetTopPileCardClass());
 
         foreach (Card card in cards)
         {
@@ -561,24 +562,33 @@ public class GameMaster : MonoBehaviour
             card.ToggleSelection(false);
             card.ToggleRaised(false);
             Vector3 destination = new Vector3(0, deckCardDistance * pile.childCount, 0);
-            if (cardLocation == CardLocation.VisibleTable)
+            if (cardLocation == CardLocation.VisibleTable || cardLocation == CardLocation.HiddenTable)
             {
                 position = GetTableCardPosition(card);
             }
             card.transform.SetParent(pile, true);
 
             card.transform.LeanMoveLocal(destination, 0.3f);
+            card.transform.LeanRotateZ(0, 0.3f);
 
-            if (cardLocation == CardLocation.VisibleTable)
+            if (cardLocation != CardLocation.Hand)
             {
-                playerController.OnPutTableCardInPile(position);
-            } else if (cardLocation == CardLocation.Hand)
+                playerController.OnPutTableCardInPile(position, cardLocation, card.GetCardClass(), card.GetCardFlavour());
+
+            }
+            else
             {
                 playerController.OnPutCardInPile(card);
             }
+
             yield return new WaitForSeconds(0.3f);
         }
         yield return new WaitForSeconds(0.1f);
+
+        if (!canPlay)
+        {
+            PlayerTakePile();
+        }
 
         if (cardClass == 14)
         {
@@ -616,7 +626,6 @@ public class GameMaster : MonoBehaviour
             Utils.SortPlayerHand(playerHand, null);
         }
     }
-    //
 
     private bool ShouldDrawCards()
     {
@@ -661,6 +670,7 @@ public class GameMaster : MonoBehaviour
         cardTransform.LeanMoveLocal(destination, 0.3f);
         cardTransform.LeanRotateZ(0, 0.3f);
     }
+    
 
     public Transform GetOpponentHandCard()
     {

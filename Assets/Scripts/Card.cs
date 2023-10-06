@@ -110,11 +110,17 @@ public class Card : MonoBehaviour
             ToggleSelection(false);
             gameMaster.PutCardsInPile(this, GameMaster.CardLocation.Hand, true);
         } 
-        else if (CardIsVisibleOnMyTable() && CanPlayTableCard())
+        else if (CardIsVisibleOnMyTable() && CanPlayTableCard() && CanPlayerCard())
         {
             ToggleHighlight(false);
             ToggleSelection(false);
             gameMaster.PutCardsInPile(this, GameMaster.CardLocation.VisibleTable, false);
+        } else if (CardIsHiddenOnMyTable() && CanPlayTableCard())
+        {
+            ToggleHighlight(false);
+            ToggleSelection(false);
+            gameMaster.PutCardsInPile(this, GameMaster.CardLocation.HiddenTable, false);
+
         }
     }
 
@@ -143,8 +149,12 @@ public class Card : MonoBehaviour
             {
                 ToggleHighlight(!isSelected);
             }
-        } else if (CardIsVisibleOnMyTable() && CanPlayTableCard() && !isHoverdOn && IsMyTurn())
+        } else if ((CardIsVisibleOnMyTable() || CardIsHiddenOnMyTable()) && CanPlayTableCard() && !isHoverdOn && IsMyTurn())
         {
+            if (CardIsVisibleOnMyTable() && !CanPlayerCard())
+            {
+                return;
+            }   
             isHoverdOn = true;
             ToggleHighlight(!isSelected);
         }
@@ -164,7 +174,7 @@ public class Card : MonoBehaviour
                     ToggleRaised(true);
                     gameMaster.OnCardSelected(this, isSelected);
                 }
-            } else if (CardIsVisibleOnMyTable() && CanPlayTableCard())
+            } else if (CardIsVisibleOnMyTable() && CanPlayTableCard() && CanPlayerCard())
             {
                 if (Input.GetMouseButtonUp(1))
                 {
@@ -227,16 +237,29 @@ public class Card : MonoBehaviour
         bool isTableCard = parent == gameMaster.playerTableCard1 || 
                            parent == gameMaster.playerTableCard2 || 
                            parent == gameMaster.playerTableCard3;
-        if (!isTableCard || parent.childCount == 1)
+        if (!isTableCard || parent.childCount < 2)
         {
             return false;
         }
         return parent.GetChild(1) == transform;
     }
+    
+    private bool CardIsHiddenOnMyTable()
+    {
+        Transform parent = transform.parent;
+        bool isTableCard = parent == gameMaster.playerTableCard1 || 
+                           parent == gameMaster.playerTableCard2 || 
+                           parent == gameMaster.playerTableCard3;
+        if (!isTableCard || parent.childCount == 0)
+        {
+            return false;
+        }
+        return parent.GetChild(0) == transform;
+    }
 
     private bool CanPlayTableCard()
     {
-        return gameMaster.GetDeckCardsCount() == 0 && gameMaster.GetPlayerHand().childCount == 0 && CanPlayerCard();
+        return gameMaster.GetDeckCardsCount() == 0 && gameMaster.GetPlayerHand().childCount == 0;
     }
 
     private bool CanPlayerCard()
