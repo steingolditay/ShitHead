@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using UnityEngine;
-using Random = UnityEngine.Random;
 
 public class GameMaster : MonoBehaviour
 {
@@ -60,10 +59,9 @@ public class GameMaster : MonoBehaviour
 
     private Collection<CardModel> cardModels = new Collection<CardModel>();
     private const float initialTimeBetweenPutCardInDeck = 0.2f;
-    private const float deckCardDistance = 0.005f;
+    private const float deckCardDistance = 0.015f;
     private const float putCardInDeckAnimationSpeed = 0.5f;
     
-    public bool playerSelectedTableCards = false;
     public List<Card> selectedTableCards = new List<Card>();
     public List<Card> unselectedTableCards = new List<Card>();
 
@@ -384,7 +382,8 @@ public class GameMaster : MonoBehaviour
 
     public IEnumerator SetPlayerSelectedTableCards()
     {
-        playerSelectedTableCards = true;
+        
+        playerController.OnPlayerSelectedTableCards();
         ToggleSelectCardsDialog(false);
         for (int i = 0; i < 3; i++)
         {
@@ -555,7 +554,7 @@ public class GameMaster : MonoBehaviour
         int cardClass = cards[0].GetCardClass();
         int position = 0;
         bool canPlay = Utils.CanPlayCard(cardClass, GetTopPileCardClass());
-
+        
         foreach (Card card in cards)
         {
             card.ToggleHighlight(false);
@@ -566,11 +565,11 @@ public class GameMaster : MonoBehaviour
             {
                 position = GetTableCardPosition(card);
             }
+            card.transform.LeanRotateY(GetNextPileCardRotation(), 0.3f);
             card.transform.SetParent(pile, true);
-
             card.transform.LeanMoveLocal(destination, 0.3f);
             card.transform.LeanRotateZ(0, 0.3f);
-
+            
             if (cardLocation != CardLocation.Hand)
             {
                 playerController.OnPutTableCardInPile(position, cardLocation, card.GetCardClass(), card.GetCardFlavour());
@@ -625,6 +624,20 @@ public class GameMaster : MonoBehaviour
         {
             Utils.SortPlayerHand(playerHand, null);
         }
+
+    }
+
+    private float GetNextPileCardRotation()
+    {
+        Transform topPileCard = GetTopPileCard();
+        if (topPileCard == null)
+        {
+            return Random.Range(-30, 30);
+        }
+
+        Card card = topPileCard.GetComponent<Card>();
+        int offset = Random.Range(card.GetCardClass() == 3 ? 15 : 10, 25);
+        return topPileCard.rotation.eulerAngles.y + offset;
     }
 
     private bool ShouldDrawCards()
@@ -655,22 +668,14 @@ public class GameMaster : MonoBehaviour
         }
     }
     
-    public void SetOpponentHandCardInPile(Transform cardTransform)
+    public void OpponentPlayCard(Transform cardTransform)
     {
         Vector3 destination = new Vector3(0, deckCardDistance * pile.childCount, 0);
+        cardTransform.LeanRotateY(GetNextPileCardRotation(), 0.3f);
         cardTransform.SetParent(pile, true);
         cardTransform.LeanMoveLocal(destination, 0.3f);
         cardTransform.LeanRotateZ(0, 0.3f);
     }
-
-    public void SetOpponentTableCardInPile(Transform cardTransform)
-    {
-        Vector3 destination = new Vector3(0, deckCardDistance * pile.childCount, 0);
-        cardTransform.SetParent(pile, true);
-        cardTransform.LeanMoveLocal(destination, 0.3f);
-        cardTransform.LeanRotateZ(0, 0.3f);
-    }
-    
 
     public Transform GetOpponentHandCard()
     {
@@ -766,6 +771,16 @@ public class GameMaster : MonoBehaviour
 
         return 0;
 
+    }
+
+    private Transform GetTopPileCard()
+    {
+        if (pile.childCount == 0)
+        {
+            return null;
+        }
+
+        return pile.GetChild(pile.childCount - 1);
     }
     
     public int GetTopPileCardClass()

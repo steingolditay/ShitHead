@@ -7,8 +7,8 @@ using UnityEngine;
 public static class Utils
 {
     
-    private const float baseHorizontalDistance = 0.02f;
-    private const float baseVerticalDistance = 0.005f;
+    private const float baseHorizontalDistance = 0.45f;
+    private const float baseVerticalDistance = 0.02f;
 
     public static Collection<CardModel> GetAllCardModels()
     {
@@ -73,6 +73,7 @@ public static class Utils
         if (middleCard != newCard)
         {
             middleCard.LeanMoveLocal(middleCardPosition, 0.3f);
+            middleCard.LeanRotateY(0, 0.3f);
         }
         else
         {
@@ -96,6 +97,8 @@ public static class Utils
                 else
                 {
                     cardObject.LeanMoveLocal(destination, 0.3f);
+                    cardObject.LeanRotateY(0, 0.3f);
+
                 }
             }
         }
@@ -210,4 +213,5 @@ public static class Utils
 
         return false;
     }
+
 }

@@ -27,10 +27,7 @@ public class Card : MonoBehaviour
         selection = transform.Find("Selection").gameObject;
 
         ToggleHighlight(false);
-        originalScale.x = transform.localScale.x / 20;
-        originalScale.y = transform.localScale.y;
-        originalScale.z = transform.localScale.z / 11.24f;
-            
+        originalScale = transform.localScale;
         Color frontImageColor = frontImage.color;
         frontImageColor.a = 0;
         frontImage.color = frontImageColor;
@@ -78,52 +75,8 @@ public class Card : MonoBehaviour
     {
         isOnSelectionStage = state;
     }
-
-    private void OnMouseDown()
-    {
-        if (isOnSelectionStage)
-        {
-            if (isHighlighted)
-            {
-                gameMaster.RemoveCardFromSelectedTableCards(this);
-            }
-            else
-            {
-                gameMaster.AddCardToSelectedTableCards(this);
-
-            }
-            isHighlighted = !isHighlighted;
-            ToggleHighlight(isHighlighted);
-            return;
-        }
-        
-        if (IsMyTurn() && CardIsInMyHand() && CanPlayerCard())
-        {
-            ToggleHighlight(false);
-            ToggleSelection(false);
-            gameMaster.PutCardsInPile(this, GameMaster.CardLocation.Hand, false);
-
-        } 
-        else if (!IsMyTurn() && !gameMaster.opponentPlayedTurn && canStick)
-        {
-            ToggleHighlight(false);
-            ToggleSelection(false);
-            gameMaster.PutCardsInPile(this, GameMaster.CardLocation.Hand, true);
-        } 
-        else if (CardIsVisibleOnMyTable() && CanPlayTableCard() && CanPlayerCard())
-        {
-            ToggleHighlight(false);
-            ToggleSelection(false);
-            gameMaster.PutCardsInPile(this, GameMaster.CardLocation.VisibleTable, false);
-        } else if (CardIsHiddenOnMyTable() && CanPlayTableCard())
-        {
-            ToggleHighlight(false);
-            ToggleSelection(false);
-            gameMaster.PutCardsInPile(this, GameMaster.CardLocation.HiddenTable, false);
-
-        }
-    }
-
+    
+    
     public void ToggleHighlight(bool state)
     {
         highlight.SetActive(state);
@@ -134,37 +87,69 @@ public class Card : MonoBehaviour
         selection.SetActive(state);
     }
 
+    private void OnMouseDown()
+    {
+        if (isOnSelectionStage)
+        {
+            HandleSelectionStage();
+            return;
+        }
+        
+        if (!IsMyCard())
+        {
+            return;
+        }
+
+        if (IsMyTurn())
+        {
+            if ((CardIsInMyHand() && CanPlayCard()) ||
+                (IsTableCard() && CanPlayTableCard() && (CardIsHiddenOnMyTable() || CanPlayCard())))
+            {
+                ToggleHighlight(false);
+                ToggleSelection(false);
+                gameMaster.PutCardsInPile(this, GetCardLocation(), false);
+            }
+        }
+        else if (!gameMaster.opponentPlayedTurn && canStick)
+        {
+            ToggleHighlight(false);
+            ToggleSelection(false);
+            gameMaster.PutCardsInPile(this, GetCardLocation(), true);
+        }
+    }
 
     private void OnMouseEnter()
     {
-        if (CardIsInMyHand() && !isHoverdOn)
+        if (IsMyCard() && !isHoverdOn)
         {
             isHoverdOn = true;
-            if (!isSelected)
+            if (CardIsInMyHand())
             {
-                ToggleRaised(true);
-            }
-            if ((IsMyTurn() && CanPlayerCard() && !isSelected) ||
-                (!IsMyTurn() && !gameMaster.opponentPlayedTurn && canStick))
+                if (!isSelected)
+                {
+                    ToggleRaised(true);
+                }
+                if ((IsMyTurn() && CanPlayCard() && !isSelected) ||
+                    (!IsMyTurn() && !gameMaster.opponentPlayedTurn && canStick))
+                {
+                    ToggleHighlight(!isSelected);
+                }
+            } else if (CanPlayTableCard() && IsMyTurn())
             {
+                if (CardIsVisibleOnMyTable() && !CanPlayCard())
+                {
+                    return;
+                }   
                 ToggleHighlight(!isSelected);
             }
-        } else if ((CardIsVisibleOnMyTable() || CardIsHiddenOnMyTable()) && CanPlayTableCard() && !isHoverdOn && IsMyTurn())
-        {
-            if (CardIsVisibleOnMyTable() && !CanPlayerCard())
-            {
-                return;
-            }   
-            isHoverdOn = true;
-            ToggleHighlight(!isSelected);
         }
     }
-//
+
     private void OnMouseOver()
     {
         if (IsMyTurn())
         {
-            if (CardIsInMyHand() && CanPlayerCard())
+            if (CardIsInMyHand() && CanPlayCard())
             {
                 if (Input.GetMouseButtonUp(1))
                 {
@@ -174,7 +159,7 @@ public class Card : MonoBehaviour
                     ToggleRaised(true);
                     gameMaster.OnCardSelected(this, isSelected);
                 }
-            } else if (CardIsVisibleOnMyTable() && CanPlayTableCard() && CanPlayerCard())
+            } else if (CardIsVisibleOnMyTable() && CanPlayTableCard() && CanPlayCard())
             {
                 if (Input.GetMouseButtonUp(1))
                 {
@@ -185,6 +170,30 @@ public class Card : MonoBehaviour
                 }
             }
         }
+    }
+    
+    private void OnMouseExit()
+    {
+        if (isHoverdOn)
+        {
+            if (IsMyCard())
+            {
+                isHoverdOn = false;
+                ToggleHighlight(false);
+
+                if (CardIsInMyHand())
+                {
+                    if (!isSelected)
+                    {
+                        ToggleRaised(false);
+                        transform.LeanScale(
+                            new Vector3(originalScale.x, originalScale.y, originalScale.z), 
+                            0.1f);
+                    }
+                }
+            }
+        }
+
     }
 
     public void DisableSelection()
@@ -195,27 +204,50 @@ public class Card : MonoBehaviour
         ToggleRaised(false);
     }
 
-    private void OnMouseExit()
+
+    
+    private void HandleSelectionStage()
     {
-        if (CardIsInMyHand() && isHoverdOn)
+        if (isHighlighted)
         {
-            isHoverdOn = false;
-            if (!isSelected)
-            {
-                ToggleRaised(false);
-                transform.LeanScale(new Vector3(originalScale.x, originalScale.y, originalScale.z), 0.1f);
-            }
-            ToggleHighlight(false);
-        } else if (CardIsVisibleOnMyTable() && CanPlayTableCard() && isHoverdOn)
-        {
-            isHoverdOn = false;
-            ToggleHighlight(false);
+            gameMaster.RemoveCardFromSelectedTableCards(this);
         }
+        else
+        {
+            gameMaster.AddCardToSelectedTableCards(this);
+
+        }
+        isHighlighted = !isHighlighted;
+        ToggleHighlight(isHighlighted);
+    }
+
+    private GameMaster.CardLocation GetCardLocation()
+    {
+        GameMaster.CardLocation cardLocation = GameMaster.CardLocation.Hand;
+        if (CardIsVisibleOnMyTable())
+        {
+            cardLocation = GameMaster.CardLocation.VisibleTable;
+        } else if (CardIsHiddenOnMyTable())
+        {
+            cardLocation = GameMaster.CardLocation.HiddenTable;
+        }
+
+        return cardLocation;
     }
 
     private bool IsMyTurn()
     {
         return gameMaster.GetCurrentPlayerTurn() == GameMaster.PlayerTurn.Player;
+    }
+
+    private bool IsTableCard()
+    {
+        return CardIsVisibleOnMyTable() || CardIsHiddenOnMyTable();
+    }
+
+    private bool IsMyCard()
+    {
+        return IsTableCard() || CardIsInMyHand();
     }
 
     public void ToggleRaised(bool state)
@@ -262,7 +294,7 @@ public class Card : MonoBehaviour
         return gameMaster.GetDeckCardsCount() == 0 && gameMaster.GetPlayerHand().childCount == 0;
     }
 
-    private bool CanPlayerCard()
+    private bool CanPlayCard()
     {
         return Utils.CanPlayCard(GetCardClass(), gameMaster.GetTopPileCardClass());
     }

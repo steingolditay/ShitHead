@@ -18,23 +18,25 @@ public class PlayerController : NetworkBehaviour
             DealDeck_ServerRpc();
         }
     }
+    
 
-    private void Update()
+    public void OnPlayerSelectedTableCards()
     {
-        if (!IsOwner) return;
+        StartCoroutine(OnOpponentSelectionCards());
+    }
 
-        if (GameMaster.Singleton.playerSelectedTableCards)
+    private IEnumerator OnOpponentSelectionCards()
+    {
+        ulong id = GetId();
+        for (int i = 0; i < 3; i++)
         {
-            GameMaster.Singleton.playerSelectedTableCards = false;
-            ulong id = GetId();
-            for (int i = 0; i < 3; i++)
-            {
-                Card card = gameMaster.selectedTableCards[i].GetComponent<Card>();
-                SetOpponentSelectedTableCards_ServerRpc(GetId(), card.GetCardClass(), card.GetCardFlavour().ToString(), i);
-            }
+            Card card = gameMaster.selectedTableCards[i].GetComponent<Card>();
+            SetOpponentSelectedTableCards_ServerRpc(GetId(), card.GetCardClass(), card.GetCardFlavour().ToString(), i);
 
-            AddPlayerReady_ServerRpc(id);
+            yield return new WaitForSeconds(0.3f);
         }
+        yield return new WaitForSeconds(0.3f);
+        AddPlayerReady_ServerRpc(id);
     }
     
     [ServerRpc(RequireOwnership = false)]
@@ -125,6 +127,7 @@ public class PlayerController : NetworkBehaviour
     {
         AddPlayerReady_ClientRpc(id);
     }
+    
     [ClientRpc]
     void AddPlayerReady_ClientRpc(ulong id)
     {
@@ -189,7 +192,7 @@ public class PlayerController : NetworkBehaviour
             gameMaster.opponentPlayedTurn = true;
             Transform cardTransform = gameMaster.GetOpponentHandCard();
             cardTransform.GetComponent<Card>().SetCardModel(new CardModel(cardClass, cardFlavour));
-            gameMaster.SetOpponentHandCardInPile(cardTransform);
+            gameMaster.OpponentPlayCard(cardTransform);
         }
     }
     
@@ -206,7 +209,7 @@ public class PlayerController : NetworkBehaviour
                 Card card = cardTransform.GetComponent<Card>();
                 card.SetCardModel(new CardModel(cardClass, Utils.GetCardFlavourForString(cardFlavour)));
             }
-            gameMaster.SetOpponentTableCardInPile(cardTransform);
+            gameMaster.OpponentPlayCard(cardTransform);
 
         }
     }
